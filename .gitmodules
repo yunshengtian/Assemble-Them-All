@@ -1,0 +1,6 @@
+[submodule "simulation/externals/pybind11"]
+	path = simulation/externals/pybind11
+	url = https://github.com/pybind/pybind11
+[submodule "simulation/externals/libigl"]
+	path = simulation/externals/libigl
+	url = https://github.com/libigl/libigl
