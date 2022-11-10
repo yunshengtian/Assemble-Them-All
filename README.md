@@ -206,7 +206,7 @@ If you find our paper, code or dataset is useful, please consider citing:
     volume={41},
     number={6},
     articleno={278},
-    pages={15},
+    numpages={15},
     year={2022},
     publisher={ACM}
 }
