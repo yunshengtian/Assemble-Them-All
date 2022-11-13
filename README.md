@@ -36,11 +36,13 @@ python setup.py install
 
 ![dataset](images/dataset.png)
 
-Our datasets are available at the links below (in .zip). Unzip them and place the folders under ``assets/`` of this code repository (recommended location, not required).
+Our datasets are available at the links below (in .zip). Unzip them and place the folders under ``assets/`` of this code repository (recommended location, not required). 
 
 [[Two-part main dataset (225.7MB)]](http://people.csail.mit.edu/yunsheng/Assemble-Them-All/joint_assembly.zip) [[Two-part rotational dataset (5.4MB)]](http://people.csail.mit.edu/yunsheng/Assemble-Them-All/joint_assembly_rotation.zip) [[Multi-part dataset (972.0MB)]](http://people.csail.mit.edu/yunsheng/Assemble-Them-All/multi_assembly.zip)
 
-**Note:** For point-based SDF collision check to work more accurately, we highly recommend subdividing the assembly meshes to have denser contact points by running ``assets/subdivide_batch.py`` (as we did in our experiments). For example, to subdivide the two-part assembly dataset saved in ``assets/joint_assembly`` and export to ``assets/joint_assembly_dense``:
+**Note 1:** Since a large portion of our dataset is modified from the [Fusion 360 Gallary Dataset](https://github.com/AutodeskAILab/Fusion360GalleryDataset), please refer to the [Fusion 360 Gallery Dataset License](https://github.com/AutodeskAILab/Fusion360GalleryDataset/blob/master/LICENSE.md) for legal usage.
+
+**Note 2:** For point-based SDF collision check to work more accurately, we highly recommend subdividing the assembly meshes to have denser contact points by running ``assets/subdivide_batch.py`` (as we did in our experiments). For example, to subdivide the two-part assembly dataset saved in ``assets/joint_assembly`` and export to ``assets/joint_assembly_dense``:
 
 ```
 python assets/subdivide_batch.py --source-dir assets/joint_assembly --target-dir assets/joint_assembly_dense --num-proc NUM_PROCESSES
