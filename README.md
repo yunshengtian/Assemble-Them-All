@@ -32,6 +32,8 @@ cd simulation
 python setup.py install
 ```
 
+**Note:** [CMake](https://cmake.org/) version > 3.16.0 is required.
+
 ### 4. Install assembly datasets
 
 ![dataset](images/dataset.png)
