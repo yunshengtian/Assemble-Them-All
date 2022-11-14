@@ -38,7 +38,7 @@ python setup.py install
 
 Our datasets are available at the links below (in .zip). Unzip them and place the folders under ``assets/`` of this code repository (recommended location, not required). 
 
-[[Two-part main dataset (225.7MB)]](http://people.csail.mit.edu/yunsheng/Assemble-Them-All/joint_assembly.zip) [[Two-part rotational dataset (5.4MB)]](http://people.csail.mit.edu/yunsheng/Assemble-Them-All/joint_assembly_rotation.zip) [[Multi-part dataset (972.0MB)]](http://people.csail.mit.edu/yunsheng/Assemble-Them-All/multi_assembly.zip)
+[[Two-part main dataset (225.7MB)]](https://people.csail.mit.edu/yunsheng/Assemble-Them-All/joint_assembly.zip) [[Two-part rotational dataset (5.4MB)]](https://people.csail.mit.edu/yunsheng/Assemble-Them-All/joint_assembly_rotation.zip) [[Multi-part dataset (972.0MB)]](https://people.csail.mit.edu/yunsheng/Assemble-Them-All/multi_assembly.zip)
 
 **Note 1:** Since a large portion of our dataset is modified from the [Fusion 360 Gallary Dataset](https://github.com/AutodeskAILab/Fusion360GalleryDataset), please refer to the [Fusion 360 Gallery Dataset License](https://github.com/AutodeskAILab/Fusion360GalleryDataset/blob/master/LICENSE.md) for legal usage.
 
