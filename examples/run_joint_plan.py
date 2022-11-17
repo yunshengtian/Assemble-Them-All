@@ -196,16 +196,18 @@ class PhysicsPlanner:
         move_mesh = None
         still_meshes = []
         for mesh, name in zip(meshes, names):
+            obj_id = int(name.replace('.obj', ''))
             if body_type == 'bvh':
                 phys_mesh = redmax.BVHMesh(mesh.vertices.T, mesh.faces.T)
             elif body_type == 'sdf':
-                phys_mesh = redmax.SDFMesh(mesh.vertices.T, mesh.faces.T, sdf_dx, load_path=os.path.join(assembly_dir, name.replace('.obj', '.sdf')))
+                phys_mesh = redmax.SDFMesh(mesh.vertices.T, mesh.faces.T, sdf_dx)
             else:
                 raise NotImplementedError
-            if name == f'{move_id}.obj':
+            if obj_id == move_id:
                 move_mesh = phys_mesh
-            else:
+            elif obj_id in still_ids:
                 still_meshes.append(phys_mesh)
+        
         min_d = compute_move_mesh_distance(move_mesh, still_meshes, state=np.zeros(3))
         collision_th = max(-min_d, 0) + collision_th
         

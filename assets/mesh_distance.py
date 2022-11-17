@@ -18,7 +18,7 @@ def compute_all_mesh_distance(meshes, states, coms=None):
     '''
     assert len(meshes) == len(states)
     if coms is None:
-        coms = [np.zeros(3) for _ in len(meshes)]
+        coms = [np.zeros(3) for _ in meshes]
     else:
         assert len(coms) == len(meshes)
 
