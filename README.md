@@ -32,7 +32,9 @@ cd simulation
 python setup.py install
 ```
 
-**Note:** [CMake](https://cmake.org/) version > 3.16.0 is required.
+**Note 1:** [CMake](https://cmake.org/) version > 3.16.0 is required.
+
+**Note 2:** For Linux, please run `sudo apt-get install libgl1-mesa-dev xorg-dev` before this step.
 
 ### 4. Install assembly datasets
 
