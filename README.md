@@ -36,6 +36,8 @@ python setup.py install
 
 **Note 2:** For Linux, please run `sudo apt-get install libgl1-mesa-dev xorg-dev` before this step.
 
+**Note 3**: Our simulation code is built upon [DiffRedMax](https://github.com/eanswer/DiffHand) and inherits its nice differentiability. Welcome to check it out!
+
 ### 4. Install assembly datasets
 
 ![dataset](images/dataset.png)
@@ -216,4 +218,18 @@ If you find our paper, code or dataset is useful, please consider citing:
     year={2022},
     publisher={ACM}
 }
+```
+
+If the simulation is particularly useful, please consider also citing:
+
+```
+@INPROCEEDINGS{Xu-RSS-21, 
+    AUTHOR    = {Jie Xu AND Tao Chen AND Lara Zlokapa AND Michael Foshey AND Wojciech Matusik AND Shinjiro Sueda AND Pulkit Agrawal}, 
+    TITLE     = {{An End-to-End Differentiable Framework for Contact-Aware Robot Design}}, 
+    BOOKTITLE = {Proceedings of Robotics: Science and Systems}, 
+    YEAR      = {2021}, 
+    ADDRESS   = {Virtual}, 
+    MONTH     = {July}, 
+    DOI       = {10.15607/RSS.2021.XVII.008} 
+} 
 ```
