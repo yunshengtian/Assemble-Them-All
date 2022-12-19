@@ -13,7 +13,6 @@
 #include "Body/BodyBVHObj.h"
 #include "Force/ForceGeneralPrimitiveContact.h"
 #include "Force/ForceGeneralSDFContact.h"
-#include "Force/ForceGeneralSDFContactWithSuction.h"
 #include "Force/ForceGeneralBVHContact.h"
 #include "Sensor/Tactile.h"
 
@@ -314,51 +313,6 @@ void Robot::set_external_force(std::vector<Vector6> forces) {
 void Robot::reset_external_force() {
     for (auto body : _bodies) {
         body->reset_external_force();
-    }
-}
-
-// suction
-void Robot::enable_suction(std::string name_from, std::string name_to) {
-    for (int i = 0;i < _forces.size();i++) {
-        Force* force = _forces[i];
-        if (dynamic_cast<ForceGeneralSDFContactWithSuction*>(const_cast<Force*>(force)) != nullptr) {
-            ForceGeneralSDFContactWithSuction* force_ = dynamic_cast<ForceGeneralSDFContactWithSuction*>(const_cast<Force*>(force));
-            if (force_->_contact_body->_name == name_from && force_->_SDF_body->_name == name_to) {
-                force_->enable_suction();
-            }
-        }
-    }
-}
-
-void Robot::disable_suction(std::string name_from, std::string name_to) {
-    for (int i = 0;i < _forces.size();i++) {
-        Force* force = _forces[i];
-        if (dynamic_cast<ForceGeneralSDFContactWithSuction*>(const_cast<Force*>(force)) != nullptr) {
-            ForceGeneralSDFContactWithSuction* force_ = dynamic_cast<ForceGeneralSDFContactWithSuction*>(const_cast<Force*>(force));
-            if (force_->_contact_body->_name == name_from && force_->_SDF_body->_name == name_to) {
-                force_->disable_suction();
-            }
-        }
-    }
-}
-
-void Robot::enable_all_suction() {
-    for (int i = 0;i < _forces.size();i++) {
-        Force* force = _forces[i];
-        if (dynamic_cast<ForceGeneralSDFContactWithSuction*>(const_cast<Force*>(force)) != nullptr) {
-            ForceGeneralSDFContactWithSuction* force_ = dynamic_cast<ForceGeneralSDFContactWithSuction*>(const_cast<Force*>(force));
-            force_->enable_suction();
-        }
-    }
-}
-
-void Robot::disable_all_suction() {
-    for (int i = 0;i < _forces.size();i++) {
-        Force* force = _forces[i];
-        if (dynamic_cast<ForceGeneralSDFContactWithSuction*>(const_cast<Force*>(force)) != nullptr) {
-            ForceGeneralSDFContactWithSuction* force_ = dynamic_cast<ForceGeneralSDFContactWithSuction*>(const_cast<Force*>(force));
-            force_->disable_suction();
-        }
     }
 }
 

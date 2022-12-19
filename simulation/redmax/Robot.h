@@ -85,12 +85,6 @@ public:
     void set_external_force(std::vector<Vector6> forces);
     void reset_external_force();
 
-    // suction
-    void enable_suction(std::string name_from, std::string name_to);
-    void disable_suction(std::string name_from, std::string name_to);
-    void enable_all_suction();
-    void disable_all_suction();
-
     // tactile data
     std::vector<dtype> get_tactile_depth(std::string name);
     std::vector<Vector2i> get_tactile_image_pos(std::string name);

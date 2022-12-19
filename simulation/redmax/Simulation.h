@@ -240,10 +240,6 @@ public:
     Matrix3X get_body_vertices(const string name, bool world_frame = false);
     Matrix3Xi get_body_faces(const string name);
     void set_body_external_force(const string name, const VectorX& force);
-    void enable_body_suction(const string name_from, const string name_to);
-    void disable_body_suction(const string name_from, const string name_to);
-    void enable_all_body_suction();
-    void disable_all_body_suction();
     dtype get_body_distance(const string name_from, const string name_to);
     bool body_in_contact(const string name_a, const string name_b, dtype eps = 1e-5);
     std::vector<std::string> get_contact_bodies(const string name);

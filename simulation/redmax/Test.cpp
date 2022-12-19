@@ -14,7 +14,6 @@
 #include "Joint/JointSphericalExp.h"
 #include "Force/ForceGeneralPrimitiveContact.h"
 #include "Force/ForceGeneralSDFContact.h"
-#include "Force/ForceGeneralSDFContactWithSuction.h"
 #include "Force/ForceGeneralBVHContact.h"
 
 using namespace redmax;
@@ -96,7 +95,6 @@ void Test::test_forward() {
     // Simulation* sim = SimEnvGenerator::createSinglePendulumTest();
     // Simulation* sim = SimEnvGenerator::createMultiPendulumTest(4);
     // Simulation* sim = SimEnvGenerator::createPrismaticTest();
-    // Simulation* sim = SimEnvGenerator::createCableTest();
     // Simulation* sim = SimEnvGenerator::createFree2DTest();
     // Simulation* sim = SimEnvGenerator::createGroundContactTest("BDF1");
     // Simulation* sim = SimEnvGenerator::createBoxContactTest("BDF1");
@@ -128,7 +126,6 @@ void Test::test_derivative() {
     // Simulation* sim = SimEnvGenerator::createSinglePendulumTest();
     // Simulation* sim = SimEnvGenerator::createMultiPendulumTest(4);
     // Simulation* sim = SimEnvGenerator::createPrismaticTest();
-    // Simulation* sim = SimEnvGenerator::createCableTest();
     // Simulation* sim = SimEnvGenerator::createFree2DTest();
     // Simulation* sim = SimEnvGenerator::createGroundContactTest();
     // Simulation* sim = SimEnvGenerator::createBoxContactTest();
@@ -205,13 +202,6 @@ void Test::test_derivative() {
     //     delete joint;
     //     delete body_bvh;
 
-    //     delete sim;
-    // }
-
-    // // test general-SDF contact with suction Derivatives
-    // {
-    //     Simulation* sim = new Simulation("../../assets/box_lift.xml");
-    //     dynamic_cast<ForceGeneralSDFContactWithSuction*>(sim->_robot->_forces[2])->test_derivatives();
     //     delete sim;
     // }
 }

@@ -22,12 +22,10 @@
 #include "Joint/JointPlanar.h"
 #include "Sensor/Tactile.h"
 #include "Sensor/TactileRectArray.h"
-#include "Force/ForceCable.h"
 #include "Force/ForceGroundContact.h"
 #include "Force/ForceCuboidCuboidContact.h"
 #include "Force/ForceGeneralPrimitiveContact.h"
 #include "Force/ForceGeneralSDFContact.h"
-#include "Force/ForceGeneralSDFContactWithSuction.h"
 #include "Force/ForceGeneralBVHContact.h"
 #include "Actuator/Actuator.h"
 #include "Actuator/ActuatorMotor.h"
@@ -310,14 +308,8 @@ Joint* Simulation::parse_from_xml_file(pugi::xml_node root, pugi::xml_node node,
                             std::string error_msg = "SDF contact body name error: " + (std::string)(child.attribute("SDF_body").value());
                             throw_error(error_msg);
                         }
-                        if (child.attribute("suction_kn")) {
-                            dtype skn = (dtype)(child.attribute("suction_kn").as_float());
-                            ForceGeneralSDFContactWithSuction* force = new ForceGeneralSDFContactWithSuction(this, it1->second, it2->second, kn, kt, mu, damping, skn);
-                            robot->add_force(force);
-                        } else {
-                            ForceGeneralSDFContact* force = new ForceGeneralSDFContact(this, it1->second, it2->second, kn, kt, mu, damping);
-                            robot->add_force(force);
-                        }
+                        ForceGeneralSDFContact* force = new ForceGeneralSDFContact(this, it1->second, it2->second, kn, kt, mu, damping);
+                        robot->add_force(force);
                     } else if ((std::string)(child.name()) == "general_BVH_contact") {
                         auto it1 = _body_map.find(child.attribute("general_body").value());
                         if (it1 == _body_map.end()) {

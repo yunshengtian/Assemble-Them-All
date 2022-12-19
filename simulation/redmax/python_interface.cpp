@@ -19,8 +19,6 @@ Simulation* make_sim(std::string env_name, std::string integrator = "BDF2") {
         sim = SimEnvGenerator::createFree2DTest(integrator);
     } else if (env_name == "GroundContact-Test") {
         sim = SimEnvGenerator::createGroundContactTest(integrator);
-    } else if (env_name == "Cable-Test") {
-        sim = SimEnvGenerator::createCableTest(integrator);
     } else if (env_name == "BoxContact-Test") {
         sim = SimEnvGenerator::createBoxContactTest(integrator);
     } else if (env_name == "TorqueFingerFlick-Demo") {
@@ -202,16 +200,6 @@ PYBIND11_MODULE(redmax_py, m) {
         .def("set_body_external_force", &Simulation::set_body_external_force,
                 "set external force to the body",
                 py::arg("name"), py::arg("force"))
-        .def("enable_body_suction", &Simulation::enable_body_suction,
-                "enable suction between bodies",
-                py::arg("name_from"), py::arg("name_to"))
-        .def("disable_body_suction", &Simulation::disable_body_suction,
-                "disable suction between bodies",
-                py::arg("name_from"), py::arg("name_to"))
-        .def("enable_all_body_suction", &Simulation::enable_all_body_suction,
-                "enable suction between all suckable bodies")
-        .def("disable_all_body_suction", &Simulation::disable_all_body_suction,
-                "disable suction between all suckable bodies")
         .def("get_body_distance", &Simulation::get_body_distance,
                 "get distance from body A to body B",
                 py::arg("name_from"), py::arg("name_to"))

@@ -146,55 +146,6 @@ void collision_detection_general_SDF(const Body* contact_body, const BodySDFObj*
     }
 }
 
-// detect the collision between a general body and a SDF body with suction
-void collision_detection_general_SDF_with_suction(const Body* contact_body, const BodySDFObj* SDF_body, std::vector<Contact>& contacts, std::vector<int>& suction_contact_ids, std::vector<Vector3>& surface_contact_pts) {
-    BodySDFObj* SDF_body_ = const_cast<BodySDFObj*>(SDF_body);
-    std::vector<Vector3> contact_points = contact_body->get_contact_points();
-    
-    if (dynamic_cast<BodyCuboid*>(const_cast<Body*>(contact_body)) != nullptr) {
-        BodyCuboid* cuboid_body_ = dynamic_cast<BodyCuboid*>(const_cast<Body*>(contact_body));
-        contact_points = cuboid_body_->get_general_contact_points();
-    }
-
-    // // AABB bounding box check
-    // if (dynamic_cast<BodySDFObj*>(const_cast<Body*>(contact_body)) != nullptr) {
-    //     BodySDFObj* contact_sdf_body_ = dynamic_cast<BodySDFObj*>(const_cast<Body*>(contact_body));
-    //     std::pair<Vector3, Vector3> aabb1 = contact_sdf_body_->get_AABB();
-    //     std::pair<Vector3, Vector3> aabb2 = SDF_body_->get_AABB();
-    //     for (int axis = 0; axis < 3;axis ++) {
-    //         if (aabb1.second[axis] < aabb2.first[axis] - 1e-6 || aabb2.second[axis] < aabb1.first[axis] - 1e-6)
-    //             return;
-    //     }
-    // }
-
-    Matrix4 E_w1 = contact_body->_E_0i;
-
-    if (suction_contact_ids.size() == 0) { // if no contact points in suction, find if any points are suckable
-        for (int i = 0;i < contact_points.size();i++) {
-            Vector3 xw1 = E_w1.topLeftCorner(3, 3) * contact_points[i] + E_w1.topRightCorner(3, 1);
-            dtype d = SDF_body_->distance(xw1);
-            if (d < 0.) {
-                Vector3 xi2 = SDF_body_->surface_contact_pt(xw1);
-                contacts.push_back(Contact(contact_points[i], xw1, d, Vector3::Zero(), i));
-                suction_contact_ids.push_back(i);
-                surface_contact_pts.push_back(xi2);
-            }
-        }
-    } else { // only deal with existing contact points in suction
-        for (int i = 0;i < suction_contact_ids.size();i++) {
-            int contact_id = suction_contact_ids[i];
-            Vector3 xw1 = E_w1.topLeftCorner(3, 3) * contact_points[contact_id] + E_w1.topRightCorner(3, 1);
-            dtype d = SDF_body_->distance(xw1);
-            contacts.push_back(Contact(contact_points[contact_id], xw1, d, Vector3::Zero(), contact_id));
-        }
-    }
-
-    if (contacts.size() > 0) {
-        const_cast<Body*>(contact_body)->add_contact_body(SDF_body->_name);
-        const_cast<BodySDFObj*>(SDF_body)->add_contact_body(contact_body->_name);
-    }
-}
-
 // detect the collision between a general body and a BVH body
 void collision_detection_general_BVH(const Body* contact_body, const BodyBVHObj* BVH_body, std::vector<Contact>& contacts) {
     BodyBVHObj* BVH_body_ = const_cast<BodyBVHObj*>(BVH_body);

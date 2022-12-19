@@ -251,22 +251,6 @@ void Simulation::set_body_external_force(const string name, const VectorX& force
     get_body(name)->set_external_force(force);
 }
 
-void Simulation::enable_body_suction(const string name_from, const string name_to) {
-    _robot->enable_suction(name_from, name_to);
-}
-
-void Simulation::disable_body_suction(const string name_from, const string name_to) {
-    _robot->disable_suction(name_from, name_to);
-}
-
-void Simulation::enable_all_body_suction() {
-    _robot->enable_all_suction();
-}
-
-void Simulation::disable_all_body_suction() {
-    _robot->disable_all_suction();
-}
-
 dtype Simulation::get_body_distance(const string name_from, const string name_to) {
     Matrix3X vertices_from = get_body_vertices(name_from, true);
     Body* body_to = get_body(name_to);

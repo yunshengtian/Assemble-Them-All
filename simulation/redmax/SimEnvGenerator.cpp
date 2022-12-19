@@ -11,7 +11,6 @@
 #include "Joint/JointSphericalEuler.h"
 #include "Joint/JointFree3DEuler.h"
 #include "Joint/JointFree3DExp.h"
-#include "Force/ForceCable.h"
 #include "Force/ForceGroundContact.h"
 #include "Force/ForceCuboidCuboidContact.h"
 #include "Force/ForceGeneralPrimitiveContact.h"
@@ -168,51 +167,6 @@ Simulation* SimEnvGenerator::createPrismaticTest(std::string integrator) {
     sim->addRobot(robot);
     sim->init();
 
-    return sim;
-}
-
-Simulation* SimEnvGenerator::createCableTest(std::string integrator) {
-    // simulation options
-    Simulation::Options *options = new Simulation::Options();
-    options->_gravity = -980. * Vector3::UnitZ();
-    options->_h = 0.01;
-    options->_integrator = integrator;
-
-    // construct simulation
-    Simulation* sim = new Simulation(options, "cable test");
-
-    Robot* robot = new Robot();
-
-    Joint* joint0 = new JointRevolute(sim, 0, Vector3::UnitY(), nullptr, Matrix3::Identity(), Vector3::Zero());
-    joint0->_q(0) = constants::pi / 2.;
-    BodyCuboid* body0 = new BodyCuboid(sim, joint0, Vector3(10, 1, 1), Matrix3::Identity(), Vector3(5, 0, 0), 1);
-    
-    Joint* joint1 = new JointRevolute(sim, 1, Vector3::UnitY(), joint0, Matrix3::Identity(), Vector3(10, 0, 0));
-    joint1->_q(0) = -constants::pi / 2.;
-    BodyCuboid* body1 = new BodyCuboid(sim, joint1, Vector3(10, 1, 1), Matrix3::Identity(), Vector3(5, 0, 0), 1);
-    
-    Joint* joint2 = new JointPrismatic(sim, 2, Vector3::UnitX(), nullptr, Matrix3::Identity(), Vector3(10, 0, 0));
-    joint2->set_stiffness(1e4, Vector1::Zero());
-    joint2->set_damping(1e3);
-    BodyCuboid* body2 = new BodyCuboid(sim, joint2, Vector3(1, 1, 1), Matrix3::Identity(), Vector3(0, 0, 0), 1);
-    
-
-    robot->_root_joints.push_back(joint0);
-    robot->_root_joints.push_back(joint2);
-
-    ForceCable* force = new ForceCable(sim);
-    force->set_stiffness(1e6);
-    force->set_damping(1e3);
-    force->addBodyPoint(body2, Vector3::Zero());
-    force->addBodyPoint(body0, Vector3(-4, 0, 1));
-    force->addBodyPoint(body1, Vector3(-4, 0, 1));
-    robot->add_force(force);
-
-    robot->init();
-
-    sim->addRobot(robot);
-    sim->init();
-    
     return sim;
 }
 
