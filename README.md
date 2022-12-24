@@ -23,7 +23,9 @@ conda env create -f environment.yml
 conda activate assembly
 ```
 
-**Note:** The package versions are critical to making sure the code runs smoothly.
+**Note 1:** The package versions are critical to making sure the code runs smoothly.
+
+**Note 2:** If you prefer setting up through docker, [here](https://hub.docker.com/r/changyun/assemble-them-all) is a docker image from [Issue #1](https://github.com/yunshengtian/Assemble-Them-All/issues/1#issuecomment-1360959428).
 
 ### 3. Install simulation bindings
 
