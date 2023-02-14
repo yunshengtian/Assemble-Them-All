@@ -44,6 +44,25 @@ def com_to_transform(com):
     return transform
 
 
+def as_mesh(scene_or_mesh):
+    '''
+    Convert a possible scene to a mesh.
+    If conversion occurs, the returned mesh has only vertex and face data.
+    '''
+    if isinstance(scene_or_mesh, trimesh.Scene):
+        if len(scene_or_mesh.geometry) == 0:
+            mesh = None  # empty scene
+        else:
+            # we lose texture information here
+            mesh = trimesh.util.concatenate(
+                tuple(trimesh.Trimesh(vertices=g.vertices, faces=g.faces)
+                    for g in scene_or_mesh.geometry.values()))
+    else:
+        assert(isinstance(scene_or_mesh, trimesh.Trimesh))
+        mesh = scene_or_mesh
+    return mesh
+
+
 def load_assembly(obj_dir, translate=True, rotvec=None, return_names=False):
     '''
     Load the entire assembly from dir
@@ -70,6 +89,8 @@ def load_assembly(obj_dir, translate=True, rotvec=None, return_names=False):
         obj_name = f'{obj_id}.obj'
         obj_path = os.path.join(obj_dir, obj_name)
         mesh = trimesh.load_mesh(obj_path, process=False, maintain_order=True)
+        mesh = as_mesh(mesh)
+        assert mesh is not None, f'mesh {obj_name} is an empty scene'
         if rotvec is not None:
             assert len(rotvec) == 3
             rot_transform = get_transform_matrix(np.concatenate([np.zeros(3), rotvec]))
