@@ -8,6 +8,8 @@ This repository contains the official code and dataset of [Assemble Them All: Ph
 
 **Summary**: In this work, we propose a novel method to efficiently plan physically plausible assembly motion and sequences for real-world assemblies. Our method leverages the assembly-by-disassembly principle and physics-based simulation to efficiently explore a reduced search space. We also define a large-scale dataset consisting of thousands of physically valid industrial assemblies with a variety of assembly motions required.
 
+**News**: We provide instructions [here](https://github.com/yunshengtian/Assemble-Them-All#custom-assembly-usage) for applying the algorithm on your custom meshes (03/2023).
+
 ## Installation
 
 ### 1. Clone repository (with dependencies)
@@ -199,6 +201,20 @@ python baselines/run_multi_plan_batch.py --seq-planner SEQ_PLANNER --path-planne
 - ``--log-dir``: Directory to store the log files containing statistics of experiments.
 
 For other arguments, see details in section "Multi-part assembly planning - single assembly" above.
+
+## Custom Assembly Usage
+
+To run the algorithm on your custom assembly meshes, some pre-processing on the meshes need to be done since the meshes could be of arbitrary scales and the individual part meshes are not centered in the origin of the coordinate axes, which will cause some trouble when applying torques on top of them.
+
+We provide a pre-processing script `assets/process_mesh.py` that rescales and reformats the custom meshes to provide an unified input to the algorithm. Assume you have a set of .obj meshes placed under `source_dir/` that form an assembly and are all in the assembled states. Run:
+
+```
+python assets/process_mesh.py --source-dir source_dir/ --target-dir target_dir/ --subdivide
+```
+
+The output directory `target_dir/` will contain: 1) all the pre-processed meshes with names `0.obj`, `1.obj`, ..., `n.obj` that are all centered in the origin of coordinate axes; 2) `id_map.json` that stores the mappings to the names of original meshes under `source_dir/`; 3) `translation.json` that stores the translation of meshes from origin to the assembled states. 
+
+To run our algorithm on top of them, just specify `--dir` and `--id` accordingly for the scripts in the above [Experiments section](https://github.com/yunshengtian/Assemble-Them-All#experiments) to make sure they can find `target_dir/`.
 
 ## Contact
 
