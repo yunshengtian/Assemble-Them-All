@@ -168,19 +168,28 @@ PYBIND11_MODULE(redmax_py, m) {
 
         .def("get_joint_q", &Simulation::get_joint_q,
                 "get q of the joint",
-                py::arg("name"), py::arg("world_frame") = false)
+                py::arg("name"))
+        .def("get_joint_qm", &Simulation::get_joint_qm,
+                "get qm of the joint",
+                py::arg("name"))
         .def("get_joint_qdot", &Simulation::get_joint_qdot,
                 "get qdot of the joint",
-                py::arg("name"), py::arg("world_frame") = false)
+                py::arg("name"))
+        .def("get_joint_qmdot", &Simulation::get_joint_qmdot,
+                "get qmdot of the joint",
+                py::arg("name"))
         .def("set_joint_q", &Simulation::set_joint_q,
                 "set q of the joint",
-                py::arg("name"), py::arg("q"), py::arg("world_frame") = false)
-        .def("set_joint_qdot", &Simulation::set_joint_qdot,
-                "set qdot of the joint",
-                py::arg("name"), py::arg("qdot"), py::arg("world_frame") = false)
-        .def("set_joint_state", &Simulation::set_joint_state,
-                "set q and qdot of the joint",
-                py::arg("name"), py::arg("q"), py::arg("qdot"), py::arg("world_frame") = false)
+                py::arg("name"), py::arg("q"))
+        .def("set_joint_qm", &Simulation::set_joint_qm,
+                "set qm of the joint",
+                py::arg("name"), py::arg("qm"))
+        .def("zero_joint_q", &Simulation::zero_joint_q,
+                "set q of the joint to be zero",
+                py::arg("name"))
+        .def("zero_joint_qdot", &Simulation::zero_joint_qdot,
+                "set qdot of the joint to be zero",
+                py::arg("name"))
 
         .def("get_body_mass", &Simulation::get_body_mass,
                 "get mass of the body",

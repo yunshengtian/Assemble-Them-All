@@ -258,9 +258,9 @@ class PhysicsPlanner:
         return state
 
     def set_state(self, state):
-        # q, qdot = state.q, state.qdot
-        q, qdot = state.q, np.zeros(self.ndof)
-        self.sim.set_joint_state(self.move_name, q, qdot)
+        q = state.q
+        self.sim.set_joint_q(self.move_name, q)
+        self.sim.zero_joint_qdot(self.move_name)
 
     def select_state(self, tree):
         raise NotImplementedError

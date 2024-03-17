@@ -152,58 +152,80 @@ Joint* Simulation::get_joint(const string name) {
     return _joint_map[name];
 }
 
-VectorX Simulation::get_joint_q(const string name, bool world_frame) {
+VectorX Simulation::get_joint_q(const string name) {
     Joint* joint = get_joint(name);
-    VectorX q = joint->_q;
-    if (world_frame) {
+    return joint->_q;
+}
+
+VectorX Simulation::get_joint_qm(const string name) {
+    Joint* joint = get_joint(name);
+    if (joint->_ndof == 3) {
+        return joint->_E_0j.topRightCorner(3, 1);
+    } else if (joint->_ndof == 6) {
+        Vector6 qm = Vector6::Zero();
         Matrix3 R2 = joint->_E_0j.topLeftCorner(3, 3);
         Vector3 p2 = joint->_E_0j.topRightCorner(3, 1);
-        q.head(3) = (R2 * q.head(3) + p2).eval();
-        q.tail(3) = (R2 * q.tail(3)).eval();
-    }
-    return q;
-}
-
-VectorX Simulation::get_joint_qdot(const string name, bool world_frame) {
-    Joint* joint = get_joint(name);
-    VectorX qdot = joint->_qdot;
-    if (world_frame) {
-        Matrix3 R2 = joint->_E_0j.topLeftCorner(3, 3);
-        qdot.head(3) = (R2 * qdot.head(3)).eval();
-        qdot.tail(3) = (R2 * qdot.tail(3)).eval();
-    }
-    return qdot;
-}
-
-void Simulation::set_joint_q(const string name, VectorX q, bool world_frame) {
-    Joint* joint = get_joint(name);
-    if (world_frame) {
-        Matrix3 R2_inv = joint->_E_0j.topLeftCorner(3, 3).inverse();
-        Vector3 p2_inv = -joint->_E_0j.topRightCorner(3, 1);
-        joint->_q.head(3) = R2_inv * (q.head(3) + p2_inv);
-        joint->_q.tail(3) = R2_inv * q.tail(3);
+        qm.head(3) = p2;
+        qm.tail(3) = math::mat2euler(R2);
+        return qm;
     } else {
-        joint->_q.head(3) = q.head(3);
-        joint->_q.tail(3) = q.tail(3);
+        throw_error("get_joint_qm: joint ndof not supported: " + std::to_string(joint->_ndof));
     }
 }
 
-void Simulation::set_joint_qdot(const string name, VectorX qdot, bool world_frame) {
+VectorX Simulation::get_joint_qdot(const string name) {
     Joint* joint = get_joint(name);
-    if (world_frame) {
-        Matrix3 R2_inv = joint->_E_0j.topLeftCorner(3, 3).inverse();
-        joint->_qdot.head(3) = R2_inv * qdot.head(3);
-        joint->_qdot.tail(3) = R2_inv * qdot.tail(3);
+    return joint->_qdot;
+}
+
+VectorX Simulation::get_joint_qmdot(const string name) {
+    Joint* joint = get_joint(name);
+    if (joint->_ndof == 3) { // translation only
+        return joint->_phi.tail(3);
+    } else if (joint->_ndof == 6) { // translation + rotation
+        Vector6 qmdot = Vector6::Zero();
+        qmdot.head(3) = joint->_phi.tail(3); // _phi: rot, trans
+        qmdot.tail(3) = joint->_phi.head(3); // qmdot: trans, rot
+        return qmdot;
     } else {
-        joint->_qdot.head(3) = qdot.head(3);
-        joint->_qdot.tail(3) = qdot.tail(3);
+        throw_error("get_joint_qmdot: joint ndof not supported: " + std::to_string(joint->_ndof));
     }
 }
 
-void Simulation::set_joint_state(const string name, VectorX q, VectorX qdot, bool world_frame) {
+void Simulation::set_joint_q(const string name, VectorX q) {
     Joint* joint = get_joint(name);
-    set_joint_q(name, q, world_frame);
-    set_joint_qdot(name, qdot, world_frame);
+    if (joint->_ndof != q.size()) throw_error("set_joint_q: joint ndof mismatch");
+    joint->_q = q;
+}
+
+void Simulation::set_joint_qm(const string name, VectorX qm) {
+    Joint* joint = get_joint(name);
+    if (joint->_parent != nullptr) throw_error("set_joint_qm: joint is not root joint");
+    if (joint->_ndof != qm.size()) throw_error("set_joint_qm: joint ndof mismatch");
+
+    Matrix4 E_0j = Matrix4::Identity();
+    E_0j.topLeftCorner(3, 3) = math::euler2mat(qm.tail(3));
+    E_0j.topRightCorner(3, 1) = qm.head(3);
+    Matrix4 Q = joint->_E_jp_0 * E_0j;
+
+    if (joint->_ndof == 3) {
+        joint->_q = Q.topRightCorner(3, 1);
+    } else if (joint->_ndof == 6) {
+        joint->_q.head(3) = Q.topRightCorner(3, 1);
+        joint->_q.tail(3) = math::log(Q.topLeftCorner(3, 3));
+    } else {
+        throw_error("set_joint_qm: joint ndof not supported: " + std::to_string(joint->_ndof));
+    }
+}
+
+void Simulation::zero_joint_q(const string name) {
+    Joint* joint = get_joint(name);
+    joint->_q.setZero();
+}
+
+void Simulation::zero_joint_qdot(const string name) {
+    Joint* joint = get_joint(name);
+    joint->_qdot.setZero();
 }
 
 // body related

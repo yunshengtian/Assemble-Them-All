@@ -22,20 +22,46 @@ namespace math {
         return rad / constants::pi * (dtype)180.0;
     }
     
-    inline Matrix3 skew(Vector3 v) {
-        Matrix3 res;
-        res(0, 0) = 0; res(0, 1) = -v(2); res(0, 2) = v(1);
-        res(1, 0) = v(2); res(1, 1) = 0; res(1, 2) = -v(0);
-        res(2, 0) = -v(1); res(2, 1) = v(0); res(2, 2) = 0;
-        return res;
+    inline MatrixX skew(VectorX v) {
+        if (v.size() == 3) {
+            Matrix3 res;
+            res(0, 0) = 0; res(0, 1) = -v(2); res(0, 2) = v(1);
+            res(1, 0) = v(2); res(1, 1) = 0; res(1, 2) = -v(0);
+            res(2, 0) = -v(1); res(2, 1) = v(0); res(2, 2) = 0;
+            return res;
+        } else if (v.size() == 6) {
+            Matrix4 res = Matrix4::Zero();
+            res(0, 0) = 0; res(0, 1) = -v(2); res(0, 2) = v(1);
+            res(1, 0) = v(2); res(1, 1) = 0; res(1, 2) = -v(0);
+            res(2, 0) = -v(1); res(2, 1) = v(0); res(2, 2) = 0;
+            res(0, 3) = v(3); res(1, 3) = v(4); res(2, 3) = v(5);
+            return res;
+        } else {
+            assert(false);
+            return MatrixX();
+        }
     }
 
-    inline Vector3 unskew(Matrix3 a) {
-        Vector3 res;
-        res(0) = a(2, 1);
-        res(1) = a(0, 2);
-        res(2) = a(1, 0);
-        return res;
+    inline VectorX unskew(MatrixX a) {
+        if (a.rows() == 3) {
+            Vector3 res;
+            res(0) = a(2, 1);
+            res(1) = a(0, 2);
+            res(2) = a(1, 0);
+            return res;
+        } else if (a.rows() == 4) {
+            Vector6 res;
+            res(0) = a(2, 1);
+            res(1) = a(0, 2);
+            res(2) = a(1, 0);
+            res(3) = a(0, 3);
+            res(4) = a(1, 3);
+            res(5) = a(2, 3);
+            return res;
+        } else {
+            assert(false);
+            return VectorX();
+        }
     }
 
     inline SE3 SE(Matrix3 R, Vector3 p) {
@@ -132,11 +158,75 @@ namespace math {
         return E;
     }
 
+    inline VectorX log(MatrixX E) {
+        Matrix3 R = E.topLeftCorner(3, 3);
+        dtype cos_theta = std::max(std::min(0.5 * (R(0, 0) + R(1, 1) + R(2, 2) - 1), 1.0), -1.0);
+        dtype theta = std::acos(cos_theta);
+        dtype sin_theta = std::sin(theta);
+        Matrix3 w_brac;
+        if (std::abs(theta) < 1e-12) {
+            w_brac.setZero();
+        } else {
+            w_brac = theta / (2 * sin_theta) * (R - R.transpose());
+        }
+
+        if (E.rows() == 3) {
+            Vector3 w = unskew(w_brac);
+            return w;
+        } else if (E.rows() == 4) {
+            Matrix4 phi_brac = Matrix4::Zero();
+            phi_brac.topLeftCorner(3, 3) = w_brac;
+            Vector3 p = E.topRightCorner(3, 1);
+            Vector3 v;
+            if (std::abs(theta) < 1e-12) {
+                v = p;
+            } else {
+                Matrix3 V = Matrix3::Identity() + (1 - cos_theta) / (theta * theta) * w_brac + (theta - sin_theta) / (theta * theta * theta) * w_brac * w_brac;
+                v = V.inverse() * p;
+            }
+            phi_brac.topRightCorner(3, 1) = v;
+            Vector6 phi = unskew(phi_brac);
+            return phi;
+        } else {
+            assert(false);
+            return VectorX();
+        }
+    }
+
     inline MatrixX gamma(Vector3 xi) {
         MatrixX G(3, 6);
         G.leftCols(3) = skew(xi).transpose();
         G.rightCols(3).setIdentity();
         return G;
+    }
+
+    inline Matrix3 euler2mat(Vector3 euler) {
+        dtype roll = euler(0), pitch = euler(1), yaw = euler(2);
+        dtype cy = std::cos(yaw);
+        dtype sy = std::sin(yaw);
+        dtype cp = std::cos(pitch);
+        dtype sp = std::sin(pitch);
+        dtype cr = std::cos(roll);
+        dtype sr = std::sin(roll);
+
+        Matrix3 mat;
+        mat << cy * cp, cy * sp * sr - sy * cr, cy * sp * cr + sy * sr,
+                        sy * cp, sy * sp * sr + cy * cr, sy * sp * cr - cy * sr,
+                        -sp, cp * sr, cp * cr;
+
+        return mat;
+    }
+
+    inline Vector3 mat2euler(Matrix3 mat) {
+        dtype r11 = mat(0, 0), r12 = mat(0, 1), r13 = mat(0, 2);
+        dtype r21 = mat(1, 0), r22 = mat(1, 1), r23 = mat(1, 2);
+        dtype r31 = mat(2, 0), r32 = mat(2, 1), r33 = mat(2, 2);
+
+        dtype roll = std::atan2(r32, r33);
+        dtype pitch = std::atan2(-r31, std::sqrt(r32 * r32 + r33 * r33));
+        dtype yaw = std::atan2(r21, r11);
+
+        return Vector3(roll, pitch, yaw);
     }
 
     inline Matrix3 quat2mat(Vector4 quat) {

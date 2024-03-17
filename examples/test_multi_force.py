@@ -135,7 +135,7 @@ if __name__ == '__main__':
 
         if args.frame_skip is not None:
             if (i + 1) % args.frame_skip == 0:
-                sim.set_joint_qdot(f'part{args.force_part_id}', np.zeros(6))
+                sim.zero_joint_qdot(f'part{args.force_part_id}')
     
     time_end = time.time()
 

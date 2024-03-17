@@ -109,6 +109,6 @@ if __name__ == '__main__':
 
         if args.frame_skip is not None:
             if (i + 1) % args.frame_skip == 0:
-                sim.set_joint_qdot('part0', np.zeros(6))
+                sim.zero_joint_qdot('part0')
         
     SimRenderer.replay(sim, record=False)

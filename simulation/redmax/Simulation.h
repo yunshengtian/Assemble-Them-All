@@ -226,12 +226,15 @@ public:
 
     // joint related
     Joint* get_joint(const string name);
-    VectorX get_joint_q(const string name, bool world_frame = false);
-    VectorX get_joint_qdot(const string name, bool world_frame = false);
-    void set_joint_q(const string name, VectorX q, bool world_frame = false);
-    void set_joint_qdot(const string name, VectorX qdot, bool world_frame = false);
-    void set_joint_state(const string name, VectorX q, VectorX qdot, bool world_frame = false);
-
+    VectorX get_joint_q(const string name);
+    VectorX get_joint_qdot(const string name);
+    VectorX get_joint_qm(const string name);
+    VectorX get_joint_qmdot(const string name);
+    void set_joint_q(const string name, VectorX q);
+    void set_joint_qm(const string name, VectorX qm);
+    void zero_joint_q(const string name);
+    void zero_joint_qdot(const string name);
+    
     // body related
     Body* get_body(const string name);
     dtype get_body_mass(const string name);
