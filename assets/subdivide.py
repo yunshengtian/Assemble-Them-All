@@ -110,7 +110,8 @@ def subdivide_assembly(source_dir, target_dir, max_edge, render=False):
     # copy translation
     source_trans_path = os.path.join(source_dir, 'translation.json')
     target_trans_path = os.path.join(target_dir, 'translation.json')
-    shutil.copyfile(source_trans_path, target_trans_path)
+    if os.path.exists(source_trans_path):
+        shutil.copyfile(source_trans_path, target_trans_path)
 
 
 if __name__ == '__main__':

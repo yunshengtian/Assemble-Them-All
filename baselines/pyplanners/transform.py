@@ -6,7 +6,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 
 
-def get_transform_matrix(state, com=np.zeros(3)):
+def get_transform_matrix(state):
     '''
     Get transformation matrix of the given state and center of mass
     '''
@@ -17,13 +17,10 @@ def get_transform_matrix(state, com=np.zeros(3)):
     elif len(state) == 6: # translation + rotation
         translation, rotation = state[:3], state[3:]
         rotation = Rotation.from_rotvec(rotation).as_matrix()
-        trans0_mat = np.eye(4)
-        trans0_mat[:3, 3] = -com
-        rot_mat = np.eye(4)
-        rot_mat[:3, :3] = rotation
-        trans1_mat = np.eye(4)
-        trans1_mat[:3, 3] = translation + com
-        return trans1_mat.dot(rot_mat).dot(trans0_mat)
+        transform = np.eye(4)
+        transform[:3, :3] = rotation
+        transform[:3, 3] = translation
+        return transform
     else:
         raise NotImplementedError
 
@@ -58,6 +55,6 @@ def transform_pts_by_matrix(pts, matrix):
         raise NotImplementedError
 
 
-def transform_pts_by_state(pts, state, com=np.zeros(3)):
-    matrix = get_transform_matrix(state, com)
+def transform_pts_by_state(pts, state):
+    matrix = get_transform_matrix(state)
     return transform_pts_by_matrix(pts, matrix)

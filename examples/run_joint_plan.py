@@ -15,7 +15,7 @@ from scipy.spatial.transform import Rotation
 from scipy.spatial.distance import pdist, squareform
 from pyquaternion import Quaternion
 
-from assets.load import load_translation, load_assembly
+from assets.load import load_translation, load_assembly, load_part_ids
 from assets.save import save_path, clear_saved_sdfs
 from assets.color import get_joint_color, get_multi_color
 from assets.transform import transform_pts_by_state
@@ -138,8 +138,8 @@ def arr_to_str(arr):
 
 
 def get_xml_string(assembly_dir, move_id, still_ids, move_joint_type, body_type, sdf_dx, col_th, save_sdf):
-    with open(os.path.join(assembly_dir, 'translation.json'), 'r') as fp:
-        translation = json.load(fp)
+    translation = load_translation(assembly_dir)
+    if translation is None: translation = {part_id: [0, 0, 0] for part_id in load_part_ids(assembly_dir)}
     body_type = body_type.upper()
     get_color = get_joint_color if len(translation.keys()) <= 2 else get_multi_color
     sdf_args = 'load_sdf="true" save_sdf="true"' if save_sdf else ''
@@ -157,7 +157,7 @@ def get_xml_string(assembly_dir, move_id, still_ids, move_joint_type, body_type,
         string += f'''
 <robot>
     <link name="part{part_id}">
-        <joint name="part{part_id}" type="{joint_type}" axis="0. 0. 0." pos="{arr_to_str(translation[str(part_id)])}" quat="1 0 0 0" frame="WORLD" damping="0"/>
+        <joint name="part{part_id}" type="{joint_type}" axis="0. 0. 0." pos="{arr_to_str(translation[part_id])}" quat="1 0 0 0" frame="WORLD" damping="0"/>
         <body name="part{part_id}" type="{body_type}" filename="{assembly_dir}/{part_id}.obj" {sdf_args} pos="0 0 0" quat="1 0 0 0" scale="1 1 1" transform_type="OBJ_TO_JOINT" density="1" dx="{sdf_dx}" col_th="{col_th}" mu="0" rgba="{arr_to_str(get_color(part_id))}"/>
     </link>
 </robot>
@@ -232,11 +232,6 @@ class PhysicsPlanner:
         self.hull_still = trimesh.convex.convex_hull(self.vertices_still)
         self.collision_manager = trimesh.collision.CollisionManager()
         self.collision_manager.add_object('hull_still', self.hull_still)
-        
-        # com
-        coms = load_translation(assembly_dir)
-        self.com_move = coms[move_id]
-        self.coms_still = [coms[still_id] for still_id in self.still_ids]
 
         self.E0i_move = self.sim.get_body_E0i(self.move_name)
         self.E0is_still = [self.sim.get_body_E0i(still_name) for still_name in self.still_names]
@@ -283,8 +278,8 @@ class PhysicsPlanner:
 
     def q_distance(self, q0, q1):
         if self.rotation:
-            boxes0 = transform_pts_by_state(np.vstack([self.min_box_move, self.max_box_move]), q0, com=self.com_move)
-            boxes1 = transform_pts_by_state(np.vstack([self.min_box_move, self.max_box_move]), q1, com=self.com_move)
+            boxes0 = transform_pts_by_state(np.vstack([self.min_box_move, self.max_box_move]), q0)
+            boxes1 = transform_pts_by_state(np.vstack([self.min_box_move, self.max_box_move]), q1)
             return np.linalg.norm(boxes0 - boxes1, axis=1).sum()
         else:
             return np.linalg.norm(q0 - q1)
@@ -324,7 +319,7 @@ class PhysicsPlanner:
             SimRenderer.replay(self.sim, record=True, record_path=record_path)
 
     def save_path(self, path, save_dir, n_save_state):
-        save_path(save_dir, path, com=self.com_move, n_frame=n_save_state)
+        save_path(save_dir, path, n_frame=n_save_state)
 
     def plan(self, max_time, seed=1, return_path=False, render=False, record_path=None):
 

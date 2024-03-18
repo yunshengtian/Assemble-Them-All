@@ -18,7 +18,7 @@ from pyplanners.rrt import rrt
 from pyplanners.targetless_rrt import targetless_rrt
 from pyplanners.smoothing import smooth_path
 
-from assets.load import load_assembly, load_translation
+from assets.load import load_assembly
 from assets.save import interpolate_path, save_path
 from assets.color import get_joint_color
 from assets.transform import transform_pts_by_state, get_transform_matrix
@@ -37,15 +37,13 @@ class PyPlanner:
 
         # load data
         meshes, names = load_assembly(assembly_dir, return_names=True)
-        coms = load_translation(assembly_dir)
         self.move_id, self.still_ids = move_id, still_ids
 
         # build meshes
         self.viz_mesh_move, self.viz_meshes_still = None, []
         self.mesh_move, self.meshes_still = None, []
-        self.com_move, self.coms_still = None, []
 
-        for mesh, name, com in zip(meshes, names, coms):
+        for mesh, name in zip(meshes, names):
             mesh_id = int(name.replace('.obj', ''))
 
             sdf_load_path = os.path.join(assembly_dir, name.replace('.obj', '.sdf'))
@@ -60,7 +58,6 @@ class PyPlanner:
                     self.mesh_move = redmax.SDFMesh(mesh.vertices.T, mesh.faces.T, sdf_dx, sdf_load_path, sdf_save_path)
                 else:
                     raise NotImplementedError
-                self.com_move = com
 
             elif mesh_id in still_ids:
                 mesh.visual.face_colors = get_joint_color(1, normalize=False)
@@ -71,7 +68,6 @@ class PyPlanner:
                     self.meshes_still.append(redmax.SDFMesh(mesh.vertices.T, mesh.faces.T, sdf_dx, sdf_load_path, sdf_save_path))
                 else:
                     raise NotImplementedError
-                self.coms_still.append(com)
 
         if adaptive_collision:
             min_d = compute_move_mesh_distance(self.mesh_move, self.meshes_still, state=np.zeros(3))
@@ -101,8 +97,8 @@ class PyPlanner:
     def get_distance_fn(self):
         if self.rotation:
             def distance_fn(q1, q2):
-                boxes1 = transform_pts_by_state(np.vstack([self.min_box_move, self.max_box_move]), q1, com=self.com_move)
-                boxes2 = transform_pts_by_state(np.vstack([self.min_box_move, self.max_box_move]), q2, com=self.com_move)
+                boxes1 = transform_pts_by_state(np.vstack([self.min_box_move, self.max_box_move]), q1)
+                boxes2 = transform_pts_by_state(np.vstack([self.min_box_move, self.max_box_move]), q2)
                 return np.linalg.norm(boxes1 - boxes2, axis=1).sum()
         else:
             def distance_fn(q1, q2):
@@ -111,7 +107,7 @@ class PyPlanner:
 
     def get_collision_fn(self):
         def collision_fn(q):
-            d = compute_move_mesh_distance(self.mesh_move, self.meshes_still, q, com=self.com_move)
+            d = compute_move_mesh_distance(self.mesh_move, self.meshes_still, q)
             return d < -self.max_collision
         return collision_fn
 
@@ -144,7 +140,7 @@ class PyPlanner:
 
     def get_goal_test(self):
         def goal_test(q):
-            transform = get_transform_matrix(q, com=self.com_move)
+            transform = get_transform_matrix(q)
             hull_move = self.hull_move.copy()
             hull_move.apply_transform(transform)
             has_collision = self.collision_manager.in_collision_single(hull_move)
@@ -160,7 +156,7 @@ class PyPlanner:
     def visualize_state(self, state, rotvec=[0, 0, 0]):
         viz_mesh_move = self.viz_mesh_move.copy()
         viz_meshes_still = [viz_mesh_still.copy() for viz_mesh_still in self.viz_meshes_still]
-        viz_mesh_move.vertices = transform_pts_by_state(viz_mesh_move.vertices, state, com=self.com_move)
+        viz_mesh_move.vertices = transform_pts_by_state(viz_mesh_move.vertices, state)
 
         assert len(rotvec) == 3
         transform = np.eye(4)
@@ -177,7 +173,7 @@ class PyPlanner:
             self.visualize_state(state, rotvec)
 
     def save_path(self, path, save_dir, n_save_state):
-        save_path(save_dir, self.viz_mesh_move, self.viz_meshes_still, self.move_id, self.still_ids, path, com=self.com_move, n_frame=n_save_state)
+        save_path(save_dir, self.viz_mesh_move, self.viz_meshes_still, self.move_id, self.still_ids, path, n_frame=n_save_state)
 
     def seed(self, seed):
         random.seed(seed)
@@ -240,7 +236,7 @@ class PyPlanner:
         elif planner_name == 'birrt':
             path = birrt(start, goal, distance_fn, sample_fn, extend_fn, collision_fn, max_iterations=max_iterations, max_time=max_time)
         elif planner_name == 'trrt':
-            path = targetless_rrt(start, self.vertices_move, self.vertices_still, self.com_move,
+            path = targetless_rrt(start, self.vertices_move, self.vertices_still,
                 distance_fn, sample_fn, extend_fn, collision_fn, goal_test=goal_test,
                 goal_probability=0.2, max_iterations=max_iterations, max_time=max_time)
         elif planner_name == 'matevec-trrt':
@@ -260,7 +256,7 @@ class PyPlanner:
                     if status != 'Failure':
                         break
             if status == 'Failure':
-                path = targetless_rrt(start, self.vertices_move, self.vertices_still, self.com_move,
+                path = targetless_rrt(start, self.vertices_move, self.vertices_still,
                     distance_fn, sample_fn, extend_fn, collision_fn, goal_test=goal_test,
                     goal_probability=0.2, max_iterations=max_iterations, max_time=max_time - (time() - t_start))
         else:

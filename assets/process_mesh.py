@@ -89,13 +89,6 @@ def process_mesh(source_dir, target_dir, subdivide, max_edge=0.5, keep_id=False,
         for i in range(len(meshes)):
             meshes[i] = subdivide_to_size(meshes[i], max_edge=max_edge)
 
-    # compute coms
-    coms = {}
-    for i, mesh in zip(obj_ids.keys(), meshes):
-        com = mesh.center_mass
-        coms[i] = com.tolist()
-        mesh.apply_transform(com_to_transform(-com))
-
     # make target directory
     os.makedirs(target_dir, exist_ok=True)
 
@@ -107,10 +100,6 @@ def process_mesh(source_dir, target_dir, subdivide, max_edge=0.5, keep_id=False,
         mesh.export(obj_target_path, header=None, include_color=False)
         if verbose:
             print(f'Processed obj written to {obj_target_path}')
-
-    # save translation
-    with open(os.path.join(target_dir, 'translation.json'), 'w') as fp:
-        json.dump(coms, fp)
 
     # save obj id map
     with open(os.path.join(target_dir, 'id_map.json'), 'w') as fp:

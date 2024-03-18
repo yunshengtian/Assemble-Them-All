@@ -46,18 +46,9 @@ def normalize_multi_assembly(source_dir, target_dir, verbose=False):
 
     # load meshes
     meshes, names = load_assembly(source_dir, translate=True, return_names=True)
-    coms = load_translation(source_dir)
 
     # normalize
     meshes = normalize(meshes)
-
-    # translation
-    coms = {}
-    for mesh, name in zip(meshes, names):
-        com = mesh.center_mass
-        obj_id = int(name.replace('.obj', ''))
-        coms[obj_id] = com.tolist()
-        mesh.apply_transform(com_to_transform(-com))
 
     # make target directory
     os.makedirs(target_dir, exist_ok=True)
@@ -71,10 +62,6 @@ def normalize_multi_assembly(source_dir, target_dir, verbose=False):
 
         if verbose:
             print(f'Normalized obj written to {obj_target_path}')
-
-    # save translation
-    with open(os.path.join(target_dir, 'translation.json'), 'w') as fp:
-        json.dump(coms, fp)
 
 
 if __name__ == '__main__':

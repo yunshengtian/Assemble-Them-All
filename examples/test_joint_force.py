@@ -10,6 +10,7 @@ import json
 from argparse import ArgumentParser
 from tqdm import tqdm
 
+from assets.load import load_translation
 from utils.renderer import SimRenderer
 
 
@@ -27,8 +28,8 @@ def arr_to_str(arr):
 
 
 def get_xml_string(assembly_dir, force_part_id, body_type, sdf_dx, friction):
-    with open(os.path.join(assembly_dir, 'translation.json'), 'r') as fp:
-        translation = json.load(fp)
+    translation = load_translation(assembly_dir)
+    if translation is None: translation = {int(part_id): [0, 0, 0] for part_id in [0, 1]}
     body_type = body_type.upper()
     string = f'''
 <redmax model="assemble">
@@ -44,7 +45,7 @@ def get_xml_string(assembly_dir, force_part_id, body_type, sdf_dx, friction):
         string += f'''
 <robot>
     <link name="part{part_id}">
-        <joint name="part{part_id}" type="{joint_type}" axis="0. 0. 0." pos="{arr_to_str(translation[part_id])}" quat="1 0 0 0" frame="WORLD" damping="0"/>
+        <joint name="part{part_id}" type="{joint_type}" axis="0. 0. 0." pos="{arr_to_str(translation[int(part_id)])}" quat="1 0 0 0" frame="WORLD" damping="0"/>
         <body name="part{part_id}" type="{body_type}" filename="{assembly_dir}/{part_id}.obj" pos="0 0 0" quat="1 0 0 0" scale="1 1 1" transform_type="OBJ_TO_JOINT" density="1" dx="{sdf_dx}" mu="0" rgba="{arr_to_str(get_color(part_id))}"/>
     </link>
 </robot>

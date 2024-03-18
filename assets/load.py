@@ -63,6 +63,19 @@ def as_mesh(scene_or_mesh):
     return mesh
 
 
+def load_part_ids(obj_dir):
+    obj_ids = []
+    for file_name in os.listdir(obj_dir):
+        if file_name.endswith('.obj'):
+            try:
+                obj_id = int(file_name.replace('.obj', ''))
+            except:
+                continue
+            obj_ids.append(obj_id)
+    obj_ids = sorted(obj_ids)
+    return obj_ids
+
+
 def load_assembly(obj_dir, translate=True, rotvec=None, return_names=False):
     '''
     Load the entire assembly from dir
@@ -74,15 +87,7 @@ def load_assembly(obj_dir, translate=True, rotvec=None, return_names=False):
     else:
         coms = None
 
-    obj_ids = []
-    for file_name in os.listdir(obj_dir):
-        if file_name.endswith('.obj'):
-            try:
-                obj_id = int(file_name.replace('.obj', ''))
-            except:
-                continue
-            obj_ids.append(obj_id)
-    obj_ids = sorted(obj_ids)
+    obj_ids = load_part_ids(obj_dir)
     get_color = get_joint_color if len(obj_ids) <= 2 else get_multi_color
 
     for seq, obj_id in enumerate(obj_ids):

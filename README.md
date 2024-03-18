@@ -48,7 +48,7 @@ python setup.py install
 
 Our datasets are available at the links below (in .zip). Unzip them and place the folders under ``assets/`` of this code repository (recommended location, not required). 
 
-[[Two-part main dataset (225.7MB)]](https://people.csail.mit.edu/yunsheng/Assemble-Them-All/joint_assembly.zip) [[Two-part rotational dataset (5.4MB)]](https://people.csail.mit.edu/yunsheng/Assemble-Them-All/joint_assembly_rotation.zip) [[Multi-part dataset (972.0MB)]](https://people.csail.mit.edu/yunsheng/Assemble-Them-All/multi_assembly.zip)
+[[Two-part main dataset (221.1MB)]](https://people.csail.mit.edu/yunsheng/Assemble-Them-All/dataset_2403/joint_assembly.zip) [[Two-part rotational dataset (5.4MB)]](https://people.csail.mit.edu/yunsheng/Assemble-Them-All/dataset_2403/joint_assembly_rotation.zip) [[Multi-part dataset (778.4MB)]](https://people.csail.mit.edu/yunsheng/Assemble-Them-All/dataset_2403/multi_assembly.zip)
 
 **Note 1:** Since a large portion of our dataset is modified from the [Fusion 360 Gallary Dataset](https://github.com/AutodeskAILab/Fusion360GalleryDataset), please refer to the [Fusion 360 Gallery Dataset License](https://github.com/AutodeskAILab/Fusion360GalleryDataset/blob/master/LICENSE.md) for legal usage.
 
@@ -204,15 +204,15 @@ For other arguments, see details in section "Multi-part assembly planning - sing
 
 ## Custom Assembly Usage
 
-To run the algorithm on your custom assembly meshes, some pre-processing on the meshes need to be done since the meshes could be of arbitrary scales and the individual part meshes are not centered in the origin of the coordinate axes, which will cause some trouble when applying torques on top of them.
+To run the algorithm on your custom assembly meshes, some pre-processing on the meshes need to be done since the meshes could be of arbitrary scales and the vertex density of meshes may not be enough for accurate point-based collision checking.
 
-We provide a pre-processing script `assets/process_mesh.py` that rescales and reformats the custom meshes to provide an unified input to the algorithm. Assume you have a set of .obj meshes placed under `source_dir/` that form an assembly and are all in the assembled states. Run:
+We provide a pre-processing script `assets/process_mesh.py` that rescales the custom meshes to provide an unified input to the algorithm. Assume you have a set of .obj meshes placed under `source_dir/` that form an assembly and are all in the assembled states. Run:
 
 ```
 python assets/process_mesh.py --source-dir source_dir/ --target-dir target_dir/ --subdivide
 ```
 
-The output directory `target_dir/` will contain: 1) all the pre-processed meshes with names `0.obj`, `1.obj`, ..., `n.obj` that are all centered in the origin of coordinate axes; 2) `id_map.json` that stores the mappings to the names of original meshes under `source_dir/`; 3) `translation.json` that stores the translation of meshes from origin to the assembled states. 
+The output directory `target_dir/` will contain: 1) all the pre-processed meshes with names `0.obj`, `1.obj`, ..., `n.obj`; 2) `id_map.json` that stores the mappings to the names of original meshes under `source_dir/`. 
 
 To run our algorithm on top of them, just specify `--dir` and `--id` accordingly for the scripts in the above [Experiments section](https://github.com/yunshengtian/Assemble-Them-All#experiments) to make sure they can find `target_dir/`.
 

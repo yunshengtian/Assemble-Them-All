@@ -12,19 +12,15 @@ import numpy as np
 from assets.transform import get_transform_matrix, transform_pts_by_matrix
 
 
-def compute_all_mesh_distance(meshes, states, coms=None):
+def compute_all_mesh_distance(meshes, states):
     '''
     Compute the minimum distance between meshes at certain states
     '''
     assert len(meshes) == len(states)
-    if coms is None:
-        coms = [np.zeros(3) for _ in meshes]
-    else:
-        assert len(coms) == len(meshes)
 
     mats, inv_mats = [], []
     for i in range(len(meshes)):
-        mat = get_transform_matrix(states[i], coms[i])
+        mat = get_transform_matrix(states[i])
         mats.append(mat)
         inv_mats.append(np.linalg.inv(mat))
 
@@ -40,13 +36,11 @@ def compute_all_mesh_distance(meshes, states, coms=None):
     return d
 
 
-def compute_move_mesh_distance(move_mesh, still_meshes, state, com=None):
+def compute_move_mesh_distance(move_mesh, still_meshes, state):
     '''
     Compute the minimum distance between meshes at certain states
     '''
-    if com is None: com = np.zeros(3)
-
-    move_mat = get_transform_matrix(state, com)
+    move_mat = get_transform_matrix(state)
     move_inv_mat = np.linalg.inv(move_mat)
 
     v_m_trans = transform_pts_by_matrix(move_mesh.vertices.T, move_mat).T

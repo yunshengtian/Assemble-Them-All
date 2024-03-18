@@ -7,7 +7,7 @@ from .rrt import TreeNode, configs
 from .bbox import compute_nearest_bbox_goal
 
 
-def targetless_rrt(start, vertices_move, vertices_still, com_move, distance_fn, sample_fn, extend_fn, collision_fn, goal_test,
+def targetless_rrt(start, vertices_move, vertices_still, distance_fn, sample_fn, extend_fn, collision_fn, goal_test,
         goal_probability=.2, max_iterations=RRT_ITERATIONS, max_time=INF):
     """
     :param start: Start configuration - conf
@@ -29,7 +29,7 @@ def targetless_rrt(start, vertices_move, vertices_still, com_move, distance_fn, 
             break
         goal = random() < goal_probability or i == 0
         if goal:
-            s, last = compute_nearest_bbox_goal(nodes, vertices_move, vertices_still, com_move)
+            s, last = compute_nearest_bbox_goal(nodes, vertices_move, vertices_still)
         else:
             s = sample_fn()
             last = argmin(lambda n: distance_fn(n.config, s), nodes)

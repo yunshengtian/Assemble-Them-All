@@ -24,7 +24,7 @@ def interpolate_path(path, n_frame=None):
     return interp_path
 
 
-# def save_path(obj_dir, move_mesh, still_meshes, move_id, still_ids, path, com=np.zeros(3), n_frame=None):
+# def save_path(obj_dir, move_mesh, still_meshes, move_id, still_ids, path, n_frame=None):
 #     '''
 #     Save motion of assembly meshes at every time step
 #     '''
@@ -36,7 +36,7 @@ def interpolate_path(path, n_frame=None):
 #         frame_dir = os.path.join(obj_dir, str(frame))
 #         os.makedirs(frame_dir)
 
-#         frame_transform = get_transform_matrix(state, com=com)
+#         frame_transform = get_transform_matrix(state)
 #         move_mesh_frame = move_mesh.copy()
 #         move_mesh_frame.apply_transform(frame_transform)
 
@@ -48,7 +48,7 @@ def interpolate_path(path, n_frame=None):
 #             still_mesh.export(still_obj_path, include_color=False, header=None)
 
 
-def save_path(obj_dir, path, com=np.zeros(3), n_frame=None):
+def save_path(obj_dir, path, n_frame=None):
     '''
     Save motion of assembly meshes at every time step
     '''
@@ -57,7 +57,7 @@ def save_path(obj_dir, path, com=np.zeros(3), n_frame=None):
 
     os.makedirs(obj_dir)
     for frame, state in enumerate(path):
-        frame_transform = get_transform_matrix(state, com=com)
+        frame_transform = get_transform_matrix(state)
         np.save(os.path.join(obj_dir, f'{frame}.npy'), frame_transform)
 
 
