@@ -17,7 +17,7 @@ from pyquaternion import Quaternion
 
 from assets.load import load_translation, load_assembly, load_part_ids
 from assets.save import save_path, clear_saved_sdfs
-from assets.color import get_joint_color, get_multi_color
+from assets.color import get_color
 from assets.transform import transform_pts_by_state
 from assets.mesh_distance import compute_move_mesh_distance
 from utils.renderer import SimRenderer
@@ -138,10 +138,11 @@ def arr_to_str(arr):
 
 
 def get_xml_string(assembly_dir, move_id, still_ids, move_joint_type, body_type, sdf_dx, col_th, save_sdf):
+    part_ids = load_part_ids(assembly_dir)
     translation = load_translation(assembly_dir)
-    if translation is None: translation = {part_id: [0, 0, 0] for part_id in load_part_ids(assembly_dir)}
+    if translation is None: translation = {part_id: [0, 0, 0] for part_id in part_ids}
     body_type = body_type.upper()
-    get_color = get_joint_color if len(translation.keys()) <= 2 else get_multi_color
+    color_map = get_color(part_ids)
     sdf_args = 'load_sdf="true" save_sdf="true"' if save_sdf else ''
     string = f'''
 <redmax model="assemble">
@@ -158,7 +159,7 @@ def get_xml_string(assembly_dir, move_id, still_ids, move_joint_type, body_type,
 <robot>
     <link name="part{part_id}">
         <joint name="part{part_id}" type="{joint_type}" axis="0. 0. 0." pos="{arr_to_str(translation[part_id])}" quat="1 0 0 0" frame="WORLD" damping="0"/>
-        <body name="part{part_id}" type="{body_type}" filename="{assembly_dir}/{part_id}.obj" {sdf_args} pos="0 0 0" quat="1 0 0 0" scale="1 1 1" transform_type="OBJ_TO_JOINT" density="1" dx="{sdf_dx}" col_th="{col_th}" mu="0" rgba="{arr_to_str(get_color(part_id))}"/>
+        <body name="part{part_id}" type="{body_type}" filename="{assembly_dir}/{part_id}.obj" {sdf_args} pos="0 0 0" quat="1 0 0 0" scale="1 1 1" transform_type="OBJ_TO_JOINT" density="1" dx="{sdf_dx}" col_th="{col_th}" mu="0" rgba="{arr_to_str(color_map[part_id])}"/>
     </link>
 </robot>
 '''
@@ -196,7 +197,7 @@ class PhysicsPlanner:
         move_mesh = None
         still_meshes = []
         for mesh, name in zip(meshes, names):
-            obj_id = int(name.replace('.obj', ''))
+            obj_id = name.replace('.obj', '')
             if body_type == 'bvh':
                 phys_mesh = redmax.BVHMesh(mesh.vertices.T, mesh.faces.T)
             elif body_type == 'sdf':
@@ -699,8 +700,8 @@ if __name__ == '__main__':
     parser.add_argument('--planner', type=str, required=True, choices=['bfs', 'bk-rrt'])
     parser.add_argument('--id', type=str, required=True, help='assembly id (e.g. 00000)')
     parser.add_argument('--dir', type=str, default='joint_assembly', help='directory storing all assemblies')
-    parser.add_argument('--move-id', type=int, default=0)
-    parser.add_argument('--still-ids', type=int, nargs='+', default=[1])
+    parser.add_argument('--move-id', type=str, default='0')
+    parser.add_argument('--still-ids', type=str, nargs='+', default=['1'])
     parser.add_argument('--rotation', default=False, action='store_true')
     parser.add_argument('--body-type', type=str, default='sdf', choices=['bvh', 'sdf'], help='simulation type of body')
     parser.add_argument('--sdf-dx', type=float, default=0.05, help='grid resolution of SDF')

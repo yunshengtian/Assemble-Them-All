@@ -11,7 +11,7 @@ import numpy as np
 import json
 import trimesh
 
-from assets.color import get_joint_color, get_multi_color
+from assets.color import get_color
 from assets.transform import get_transform_matrix, transform_pts_by_state
 
 
@@ -28,9 +28,9 @@ def load_translation(obj_dir, rotvec=None):
             coms = json.load(fp)
         new_coms = {}
         for key, val in coms.items():
-            new_coms[int(key)] = np.array(val)
+            new_coms[key] = np.array(val)
             if rotvec is not None:
-                new_coms[int(key)] = transform_pts_by_state(new_coms[int(key)], np.concatenate([np.zeros(3), rotvec]))
+                new_coms[key] = transform_pts_by_state(new_coms[key], np.concatenate([np.zeros(3), rotvec]))
         coms = new_coms
     return coms
 
@@ -68,7 +68,7 @@ def load_part_ids(obj_dir):
     for file_name in os.listdir(obj_dir):
         if file_name.endswith('.obj'):
             try:
-                obj_id = int(file_name.replace('.obj', ''))
+                obj_id = file_name.replace('.obj', '')
             except:
                 continue
             obj_ids.append(obj_id)
@@ -88,9 +88,9 @@ def load_assembly(obj_dir, translate=True, rotvec=None, return_names=False):
         coms = None
 
     obj_ids = load_part_ids(obj_dir)
-    get_color = get_joint_color if len(obj_ids) <= 2 else get_multi_color
+    color_map = get_color(obj_ids, normalize=False)
 
-    for seq, obj_id in enumerate(obj_ids):
+    for obj_id in obj_ids:
         obj_name = f'{obj_id}.obj'
         obj_path = os.path.join(obj_dir, obj_name)
         mesh = trimesh.load_mesh(obj_path, process=False, maintain_order=True)
@@ -105,7 +105,7 @@ def load_assembly(obj_dir, translate=True, rotvec=None, return_names=False):
                 coms[obj_id] = transform_pts_by_state(coms[obj_id], np.concatenate([np.zeros(3), rotvec]))
             com_transform = com_to_transform(coms[obj_id])
             mesh.apply_transform(com_transform)
-        mesh.visual.face_colors = get_color(seq, normalize=False)
+        mesh.visual.face_colors = color_map[obj_id]
         meshes.append(mesh)
         names.append(obj_name)
     
@@ -121,7 +121,7 @@ def load_paths(path_dir):
     '''
     paths = {}
     for step in os.listdir(path_dir):
-        obj_id = int(step.split('_')[1])
+        obj_id = step.split('_')[1]
         step_dir = os.path.join(path_dir, step)
         if os.path.isdir(step_dir):
             path = []

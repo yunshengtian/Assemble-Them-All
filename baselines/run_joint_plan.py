@@ -18,9 +18,9 @@ from pyplanners.rrt import rrt
 from pyplanners.targetless_rrt import targetless_rrt
 from pyplanners.smoothing import smooth_path
 
-from assets.load import load_assembly
+from assets.load import load_assembly, load_part_ids
 from assets.save import interpolate_path, save_path
-from assets.color import get_joint_color
+from assets.color import get_color
 from assets.transform import transform_pts_by_state, get_transform_matrix
 from assets.mesh_distance import compute_move_mesh_distance
 
@@ -38,19 +38,21 @@ class PyPlanner:
         # load data
         meshes, names = load_assembly(assembly_dir, return_names=True)
         self.move_id, self.still_ids = move_id, still_ids
+        part_ids = load_part_ids(assembly_dir)
+        color_map = get_color(part_ids, normalize=False)
 
         # build meshes
         self.viz_mesh_move, self.viz_meshes_still = None, []
         self.mesh_move, self.meshes_still = None, []
 
         for mesh, name in zip(meshes, names):
-            mesh_id = int(name.replace('.obj', ''))
+            mesh_id = name.replace('.obj', '')
+            mesh.visual.face_colors = color_map[mesh_id]
 
             sdf_load_path = os.path.join(assembly_dir, name.replace('.obj', '.sdf'))
             sdf_save_path = sdf_load_path if save_sdf else ''
 
             if mesh_id == move_id:
-                mesh.visual.face_colors = get_joint_color(0, normalize=False)
                 self.viz_mesh_move = mesh
                 if body_type == 'bvh':
                     self.mesh_move = redmax.BVHMesh(mesh.vertices.T, mesh.faces.T)
@@ -60,7 +62,6 @@ class PyPlanner:
                     raise NotImplementedError
 
             elif mesh_id in still_ids:
-                mesh.visual.face_colors = get_joint_color(1, normalize=False)
                 self.viz_meshes_still.append(mesh)
                 if body_type == 'bvh':
                     self.meshes_still.append(redmax.BVHMesh(mesh.vertices.T, mesh.faces.T))
@@ -281,8 +282,8 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--dir', type=str, default='joint_assembly', help='directory storing all assemblies')
     parser.add_argument('--id', type=str, required=True, help='assembly id (e.g. 00000)')
-    parser.add_argument('--move-id', type=int, default=0)
-    parser.add_argument('--still-ids', type=int, nargs='+', default=[1])
+    parser.add_argument('--move-id', type=str, default='0')
+    parser.add_argument('--still-ids', type=str, nargs='+', default=['1'])
     parser.add_argument('--rotation', default=False, action='store_true')
     parser.add_argument('--planner', type=str, required=True, choices=['rrt', 'rrt-connect', 'birrt', 'trrt', 'matevec-trrt'])
     parser.add_argument('--max-collision', type=float, default=1e-2)

@@ -10,7 +10,7 @@ This repository contains the official code and dataset of [Assemble Them All: Ph
 
 **News**:
 
-- `translation.json` is no longer required for your assembly assets as long as the meshes are already in assembled states (03/2024).
+- Easier input preparation for your custom assemblies: `translation.json` is no longer required for your assembly assets as long as the meshes are already in assembled states, and file names can be arbitrary (do not have to be integer anymore) (03/2024).
 
 - We provide instructions [here](https://github.com/yunshengtian/Assemble-Them-All#custom-assembly-usage) for applying the algorithm on your custom meshes (03/2023).
 
@@ -216,7 +216,7 @@ We provide a pre-processing script `assets/process_mesh.py` that rescales the cu
 python assets/process_mesh.py --source-dir source_dir/ --target-dir target_dir/ --subdivide
 ```
 
-The output directory `target_dir/` will contain: 1) all the pre-processed meshes with names `0.obj`, `1.obj`, ..., `n.obj`; 2) `id_map.json` that stores the mappings to the names of original meshes under `source_dir/`. 
+Then, all the pre-processed meshes will be written to the output directory `target_dir/`. 
 
 To run our algorithm on top of them, just specify `--dir` and `--id` accordingly for the scripts in the above [Experiments section](https://github.com/yunshengtian/Assemble-Them-All#experiments) to make sure they can find `target_dir/`.
 

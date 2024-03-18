@@ -46,8 +46,8 @@ if __name__ == "__main__":
 
     parser = ArgumentParser()
     parser.add_argument('--dir', type=str, default='joint_assembly')
-    parser.add_argument('--move-id', type=int, default=0)
-    parser.add_argument('--still-ids', type=int, nargs='+', default=[1])
+    parser.add_argument('--move-id', type=str, default='0')
+    parser.add_argument('--still-ids', type=str, nargs='+', default=['1'])
     parser.add_argument('--rotation', default=False, action='store_true')
     parser.add_argument('--planner', type=str, required=True, choices=['rrt', 'rrt-connect', 'birrt', 'trrt', 'matevec-trrt'])
     parser.add_argument('--max-collision', type=float, default=1e-2)

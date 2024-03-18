@@ -25,7 +25,7 @@ class SequencePlanner:
         
         meshes, names = load_assembly(assembly_dir, return_names=True)
 
-        part_ids = [int(name.replace('.obj', '')) for name in names]
+        part_ids = [name.replace('.obj', '') for name in names]
         for i in range(len(part_ids)):
             self.graph.add_node(part_ids[i])
 
@@ -119,7 +119,7 @@ class RandomSequencePlanner(SequencePlanner):
             
             if status in self.success_status:
                 self.graph.remove_node(move_id)
-                sequence.append(int(move_id))
+                sequence.append(move_id)
 
             if len(self.graph.nodes) == 1:
                 seq_status = 'Success'
@@ -193,7 +193,7 @@ class QueueSequencePlanner(SequencePlanner):
             
             if status in self.success_status:
                 self.graph.remove_node(move_id)
-                sequence.append(int(move_id))
+                sequence.append(move_id)
             else:
                 inactive_queue.append(move_id)
 
@@ -300,7 +300,7 @@ class ProgressiveQueueSequencePlanner(SequencePlanner):
             
             if status in self.success_status:
                 self.graph.remove_node(move_id)
-                sequence.append(int(move_id))
+                sequence.append(move_id)
             else:
                 inactive_queue.append([move_id, max_depth + 1])
 

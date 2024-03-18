@@ -48,7 +48,7 @@ def get_oriented_bounding_box(mesh):
     return extents
 
 
-def process_mesh(source_dir, target_dir, subdivide, max_edge=0.5, keep_id=False, verbose=False):
+def process_mesh(source_dir, target_dir, subdivide, max_edge=0.5, verbose=False):
     '''
     1. Check watertight
     2. Scale to unit bounding box
@@ -67,11 +67,8 @@ def process_mesh(source_dir, target_dir, subdivide, max_edge=0.5, keep_id=False,
     obj_ids = {}
     watertight = True
     for i, source_file in enumerate(source_files):
-        if keep_id:
-            source_id = int(source_file.replace('.obj', ''))
-            obj_ids[source_id] = source_file
-        else:
-            obj_ids[i] = source_file
+        source_id = source_file.replace('.obj', '')
+        obj_ids[source_id] = source_file
         source_path = os.path.join(source_dir, source_file)
         mesh = trimesh.load_mesh(source_path, process=False, maintain_order=True)
         if not mesh.is_watertight:
@@ -101,10 +98,6 @@ def process_mesh(source_dir, target_dir, subdivide, max_edge=0.5, keep_id=False,
         if verbose:
             print(f'Processed obj written to {obj_target_path}')
 
-    # save obj id map
-    with open(os.path.join(target_dir, 'id_map.json'), 'w') as fp:
-        json.dump(obj_ids, fp)
-
     return True
 
 
@@ -116,8 +109,7 @@ if __name__ == '__main__':
     parser.add_argument('--target-dir', type=str, required=True)
     parser.add_argument('--subdivide', default=False, action='store_true')
     parser.add_argument('--max-edge', type=float, default=0.5)
-    parser.add_argument('--keep-id', default=False, action='store_true')
     args = parser.parse_args()
 
-    success = process_mesh(args.source_dir, args.target_dir, args.subdivide, max_edge=args.max_edge, keep_id=args.keep_id, verbose=True)
+    success = process_mesh(args.source_dir, args.target_dir, args.subdivide, max_edge=args.max_edge, verbose=True)
     print(f'Success: {success}')

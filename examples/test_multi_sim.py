@@ -11,19 +11,8 @@ from argparse import ArgumentParser
 from tqdm import tqdm
 
 from assets.load import load_translation, load_part_ids
+from assets.color import get_color
 from utils.renderer import SimRenderer
-
-
-def get_color(index):
-    colors = [
-        [210, 87, 89, 255],
-        [237, 204, 73, 255],
-        [60, 167, 221, 255],
-        [190, 126, 208, 255],
-        [108, 192, 90, 255],
-    ]
-    colors = np.array(colors) / 255.0
-    return colors[int(index) % 5]
 
 
 def arr_to_str(arr):
@@ -31,8 +20,10 @@ def arr_to_str(arr):
 
 
 def get_xml_string(assembly_dir, part_ids, fixed, body_type, sdf_dx, sdf_res, gravity, friction):
+    all_part_ids = load_part_ids(assembly_dir)
     translation = load_translation(assembly_dir)
-    if translation is None: translation = {int(part_id): [0, 0, 0] for part_id in load_part_ids(assembly_dir)}
+    if translation is None: translation = {part_id: [0, 0, 0] for part_id in all_part_ids}
+    color_map = get_color(all_part_ids)
     joint_type = 'fixed' if fixed else 'free3d-exp'
     body_type = body_type.upper()
     string = f'''
@@ -49,8 +40,8 @@ def get_xml_string(assembly_dir, part_ids, fixed, body_type, sdf_dx, sdf_res, gr
         string += f'''
 <robot>
     <link name="part{part_id}">
-        <joint name="part{part_id}" type="{joint_type}" axis="0. 0. 0." pos="{arr_to_str(translation[int(part_id)])}" quat="1 0 0 0" frame="WORLD" damping="0"/>
-        <body name="part{part_id}" type="{body_type}" filename="{assembly_dir}/{part_id}.obj" pos="0 0 0" quat="1 0 0 0" scale="1 1 1" transform_type="OBJ_TO_JOINT" density="1" dx="{sdf_dx}" res="{sdf_res}" mu="0" rgba="{arr_to_str(get_color(part_id))}"/>
+        <joint name="part{part_id}" type="{joint_type}" axis="0. 0. 0." pos="{arr_to_str(translation[part_id])}" quat="1 0 0 0" frame="WORLD" damping="0"/>
+        <body name="part{part_id}" type="{body_type}" filename="{assembly_dir}/{part_id}.obj" pos="0 0 0" quat="1 0 0 0" scale="1 1 1" transform_type="OBJ_TO_JOINT" density="1" dx="{sdf_dx}" res="{sdf_res}" mu="0" rgba="{arr_to_str(color_map[part_id])}"/>
     </link>
 </robot>
 '''
@@ -74,19 +65,6 @@ def get_xml_string(assembly_dir, part_ids, fixed, body_type, sdf_dx, sdf_res, gr
     return string
 
 
-def get_part_id(obj_name):
-    return obj_name.split('_')[-1].replace('.obj', '')
-
-
-def get_part_ids(obj_dir):
-    part_ids = []
-    for obj_name in os.listdir(obj_dir):
-        if obj_name.endswith('.obj') and obj_name != 'assembly.obj':
-            part_ids.append(get_part_id(obj_name))
-    part_ids.sort(key=lambda x: int(x))
-    return part_ids
-
-
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--id', type=str, required=True, help='assembly id (e.g. 00000)')
@@ -105,7 +83,7 @@ if __name__ == '__main__':
     assembly_dir = os.path.join(asset_folder, args.dir, args.id)
 
     if args.part_ids is None:
-        part_ids = get_part_ids(assembly_dir)
+        part_ids = load_part_ids(assembly_dir)
     else:
         part_ids = args.part_ids
 

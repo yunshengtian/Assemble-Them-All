@@ -11,17 +11,9 @@ from argparse import ArgumentParser
 from tqdm import tqdm
 import time
 
-from assets.load import load_translation
+from assets.load import load_translation, load_part_ids
+from assets.color import get_color
 from utils.renderer import SimRenderer
-
-
-def get_color(index):
-    colors = [
-        [0.42, 0.65, 0.63, 1],
-        [0.82, 0.72, 0.58, 1],
-    ]
-    colors = np.array(colors)
-    return colors[int(index)]
 
 
 def arr_to_str(arr):
@@ -29,8 +21,10 @@ def arr_to_str(arr):
 
 
 def get_xml_string(assembly_dir, fixed, body_type, sdf_dx, gravity, friction):
+    part_ids = load_part_ids(assembly_dir)
     translation = load_translation(assembly_dir)
-    if translation is None: translation = {int(part_id): [0, 0, 0] for part_id in [0, 1]}
+    if translation is None: translation = {part_id: [0, 0, 0] for part_id in part_ids}
+    color_map = get_color(part_ids)
     joint_type = 'fixed' if fixed else 'free3d-exp'
     body_type = body_type.upper()
     string = f'''
@@ -47,8 +41,8 @@ def get_xml_string(assembly_dir, fixed, body_type, sdf_dx, gravity, friction):
         string += f'''
 <robot>
     <link name="part{part_id}">
-        <joint name="part{part_id}" type="{joint_type}" axis="0. 0. 0." pos="{arr_to_str(translation[int(part_id)])}" quat="1 0 0 0" frame="WORLD" damping="0"/>
-        <body name="part{part_id}" type="{body_type}" filename="{assembly_dir}/{part_id}.obj" pos="0 0 0" quat="1 0 0 0" scale="1 1 1" transform_type="OBJ_TO_JOINT" density="1" dx="{sdf_dx}" mu="0" rgba="{arr_to_str(get_color(part_id))}"/>
+        <joint name="part{part_id}" type="{joint_type}" axis="0. 0. 0." pos="{arr_to_str(translation[part_id])}" quat="1 0 0 0" frame="WORLD" damping="0"/>
+        <body name="part{part_id}" type="{body_type}" filename="{assembly_dir}/{part_id}.obj" pos="0 0 0" quat="1 0 0 0" scale="1 1 1" transform_type="OBJ_TO_JOINT" density="1" dx="{sdf_dx}" mu="0" rgba="{arr_to_str(color_map[part_id])}"/>
     </link>
 </robot>
 '''
