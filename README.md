@@ -8,7 +8,11 @@ This repository contains the official code and dataset of [Assemble Them All: Ph
 
 **Summary**: In this work, we propose a novel method to efficiently plan physically plausible assembly motion and sequences for real-world assemblies. Our method leverages the assembly-by-disassembly principle and physics-based simulation to efficiently explore a reduced search space. We also define a large-scale dataset consisting of thousands of physically valid industrial assemblies with a variety of assembly motions required.
 
-**News**: We provide instructions [here](https://github.com/yunshengtian/Assemble-Them-All#custom-assembly-usage) for applying the algorithm on your custom meshes (03/2023).
+**News**:
+
+- `translation.json` is no longer required for your assembly assets as long as the meshes are already in assembled states (03/2024).
+
+- We provide instructions [here](https://github.com/yunshengtian/Assemble-Them-All#custom-assembly-usage) for applying the algorithm on your custom meshes (03/2023).
 
 ## Installation
 
