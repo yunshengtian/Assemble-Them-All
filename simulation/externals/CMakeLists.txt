@@ -1,5 +1,5 @@
 # CMake entry point.
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.16)
 
 # Do not want to generate zeor_check because they cause messy folders in
 # visual studio 2017.
@@ -21,6 +21,11 @@ set(EXTERNAL_HEADER
 
 include_directories(${EXTERNAL_HEADER})
 
+# Create Eigen3::Eigen target pointing to bundled Eigen to prevent libigl from fetching its own
+add_library(Eigen3_Eigen INTERFACE)
+add_library(Eigen3::Eigen ALIAS Eigen3_Eigen)
+target_include_directories(Eigen3_Eigen SYSTEM INTERFACE "${CMAKE_CURRENT_LIST_DIR}/eigen/")
+
 # libigl
 add_subdirectory(libigl)
 
@@ -31,6 +36,8 @@ add_subdirectory(tiny_obj_loader)
 add_subdirectory(pugixml)
 
 # pybind11
+# Set policy minimum to allow pybind11's cmake_minimum_required(VERSION 3.4) to work with modern CMake
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 add_subdirectory(pybind11)
 
 # sdfgen

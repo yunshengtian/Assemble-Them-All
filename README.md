@@ -24,20 +24,24 @@ git clone --recurse-submodules git@github.com:yunshengtian/Assemble-Them-All.git
 
 ### 2. Setup Python environment
 
-```
-conda env create -f environment.yml
-conda activate assembly
+This project uses [Poetry](https://python-poetry.org/) for dependency management. Requires Python 3.12+.
+
+```bash
+# Install dependencies
+poetry install
+
+# Activate the virtual environment
+poetry shell
 ```
 
-**Note 1:** The package versions are critical to making sure the code runs smoothly.
-
-**Note 2:** If you prefer setting up through docker, [here](https://hub.docker.com/r/changyun/assemble-them-all) is a docker image from [Issue #1](https://github.com/yunshengtian/Assemble-Them-All/issues/1#issuecomment-1360959428).
+**Note 1:** If you prefer setting up through docker, [here](https://hub.docker.com/r/changyun/assemble-them-all) is a docker image from [Issue #1](https://github.com/yunshengtian/Assemble-Them-All/issues/1#issuecomment-1360959428).
 
 ### 3. Install simulation bindings
 
-```
+```bash
 cd simulation
-python setup.py install
+pip install .
+cd ..
 ```
 
 **Note 1:** [CMake](https://cmake.org/) version > 3.16.0 is required.

@@ -18,6 +18,12 @@
 
 using namespace redmax;
 
+// Explicit using declarations to resolve ambiguity with Eigen 3.4's template aliases
+using redmax::Vector3;
+using redmax::VectorX;
+using redmax::Matrix3X;
+using redmax::MatrixX;
+
 Eigen::VectorXd Test::random_generated_vector(int len, Eigen::VectorXd lower_bound, Eigen::VectorXd upper_bound) {
     Eigen::VectorXd res(len);
     for (int i = 0;i < len;++i) {

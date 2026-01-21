@@ -7,6 +7,12 @@
 
 using namespace redmax;
 
+// Explicit using declarations to resolve ambiguity with Eigen 3.4's template aliases
+using redmax::Vector3;
+using redmax::VectorX;
+using redmax::Matrix3X;
+using redmax::MatrixX;
+
 namespace py = pybind11;
 
 Simulation* make_sim(std::string env_name, std::string integrator = "BDF2") {

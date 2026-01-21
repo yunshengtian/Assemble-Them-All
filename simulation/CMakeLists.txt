@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.16.0)
 
 set(CMAKE_SUPPRESS_REGENERATION true)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)

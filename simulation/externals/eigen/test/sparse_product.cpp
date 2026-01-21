@@ -7,6 +7,12 @@
 // Public License v. 2.0. If a copy of the MPL was not distributed
 // with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+#if defined(_MSC_VER) && (_MSC_VER==1800)
+// This unit test takes forever to compile in Release mode with MSVC 2013,
+// multiple hours. So let's switch off optimization for this one.
+#pragma optimize("",off)
+#endif
+
 static long int nb_temporaries;
 
 inline void on_temporary_creation() {
@@ -94,13 +100,15 @@ template<typename SparseMatrixType> void sparse_product()
     VERIFY_IS_APPROX(m4=(m2t.transpose()*m3t.transpose()).pruned(0), refMat4=refMat2t.transpose()*refMat3t.transpose());
     VERIFY_IS_APPROX(m4=(m2*m3t.transpose()).pruned(0), refMat4=refMat2*refMat3t.transpose());
 
+#ifndef EIGEN_SPARSE_PRODUCT_IGNORE_TEMPORARY_COUNT
     // make sure the right product implementation is called:
     if((!SparseMatrixType::IsRowMajor) && m2.rows()<=m3.cols())
     {
-      VERIFY_EVALUATION_COUNT(m4 = m2*m3, 3); // 1 temp for the result + 2 for transposing and get a sorted result.
+      VERIFY_EVALUATION_COUNT(m4 = m2*m3, 2); // 2 for transposing and get a sorted result.
       VERIFY_EVALUATION_COUNT(m4 = (m2*m3).pruned(0), 1);
       VERIFY_EVALUATION_COUNT(m4 = (m2*m3).eval().pruned(0), 4);
     }
+#endif
 
     // and that pruning is effective:
     {
@@ -145,7 +153,7 @@ template<typename SparseMatrixType> void sparse_product()
     VERIFY_IS_APPROX(dm4.noalias()-=m2*refMat3, refMat4-=refMat2*refMat3);
     VERIFY_IS_APPROX(dm4=m2*(refMat3+refMat3), refMat4=refMat2*(refMat3+refMat3));
     VERIFY_IS_APPROX(dm4=m2t.transpose()*(refMat3+refMat5)*0.5, refMat4=refMat2t.transpose()*(refMat3+refMat5)*0.5);
-    
+
     // sparse * dense vector
     VERIFY_IS_APPROX(dm4.col(0)=m2*refMat3.col(0), refMat4.col(0)=refMat2*refMat3.col(0));
     VERIFY_IS_APPROX(dm4.col(0)=m2*refMat3t.transpose().col(0), refMat4.col(0)=refMat2*refMat3t.transpose().col(0));
@@ -176,7 +184,7 @@ template<typename SparseMatrixType> void sparse_product()
       VERIFY_IS_APPROX( m4=m2.middleCols(c,1)*dm5.col(c1).transpose(), refMat4=refMat2.col(c)*dm5.col(c1).transpose());
       VERIFY_IS_EQUAL(m4.nonZeros(), (refMat4.array()!=0).count());
       VERIFY_IS_APPROX(dm4=m2.col(c)*dm5.col(c1).transpose(), refMat4=refMat2.col(c)*dm5.col(c1).transpose());
-      
+
       VERIFY_IS_APPROX(m4=dm5.col(c1)*m2.col(c).transpose(), refMat4=dm5.col(c1)*refMat2.col(c).transpose());
       VERIFY_IS_EQUAL(m4.nonZeros(), (refMat4.array()!=0).count());
       VERIFY_IS_APPROX(m4=dm5.col(c1)*m2.middleCols(c,1).transpose(), refMat4=dm5.col(c1)*refMat2.col(c).transpose());
@@ -205,23 +213,23 @@ template<typename SparseMatrixType> void sparse_product()
     }
 
     VERIFY_IS_APPROX(m6=m6*m6, refMat6=refMat6*refMat6);
-    
+
     // sparse matrix * sparse vector
     ColSpVector cv0(cols), cv1;
     DenseVector dcv0(cols), dcv1;
     initSparse(2*density,dcv0, cv0);
-    
+
     RowSpVector rv0(depth), rv1;
     RowDenseVector drv0(depth), drv1(rv1);
     initSparse(2*density,drv0, rv0);
 
-    VERIFY_IS_APPROX(cv1=m3*cv0, dcv1=refMat3*dcv0);    
+    VERIFY_IS_APPROX(cv1=m3*cv0, dcv1=refMat3*dcv0);
     VERIFY_IS_APPROX(rv1=rv0*m3, drv1=drv0*refMat3);
     VERIFY_IS_APPROX(cv1=m3t.adjoint()*cv0, dcv1=refMat3t.adjoint()*dcv0);
     VERIFY_IS_APPROX(cv1=rv0*m3, dcv1=drv0*refMat3);
     VERIFY_IS_APPROX(rv1=m3*cv0, drv1=refMat3*dcv0);
   }
-  
+
   // test matrix - diagonal product
   {
     DenseMatrix refM2 = DenseMatrix::Zero(rows, cols);
@@ -237,7 +245,7 @@ template<typename SparseMatrixType> void sparse_product()
     VERIFY_IS_APPROX(m3=m2.transpose()*d2, refM3=refM2.transpose()*d2);
     VERIFY_IS_APPROX(m3=d2*m2, refM3=d2*refM2);
     VERIFY_IS_APPROX(m3=d1*m2.transpose(), refM3=d1*refM2.transpose());
-    
+
     // also check with a SparseWrapper:
     DenseVector v1 = DenseVector::Random(cols);
     DenseVector v2 = DenseVector::Random(rows);
@@ -246,12 +254,12 @@ template<typename SparseMatrixType> void sparse_product()
     VERIFY_IS_APPROX(m3=m2.transpose()*v2.asDiagonal(), refM3=refM2.transpose()*v2.asDiagonal());
     VERIFY_IS_APPROX(m3=v2.asDiagonal()*m2, refM3=v2.asDiagonal()*refM2);
     VERIFY_IS_APPROX(m3=v1.asDiagonal()*m2.transpose(), refM3=v1.asDiagonal()*refM2.transpose());
-    
+
     VERIFY_IS_APPROX(m3=v2.asDiagonal()*m2*v1.asDiagonal(), refM3=v2.asDiagonal()*refM2*v1.asDiagonal());
 
     VERIFY_IS_APPROX(v2=m2*v1.asDiagonal()*v1, refM2*v1.asDiagonal()*v1);
     VERIFY_IS_APPROX(v3=v2.asDiagonal()*m2*v1, v2.asDiagonal()*refM2*v1);
-    
+
     // evaluate to a dense matrix to check the .row() and .col() iterator functions
     VERIFY_IS_APPROX(d3=m2*d1, refM3=refM2*d1);
     VERIFY_IS_APPROX(d3=m2.transpose()*d2, refM3=refM2.transpose()*d2);
@@ -304,20 +312,20 @@ template<typename SparseMatrixType> void sparse_product()
     VERIFY_IS_APPROX(x.noalias()+=mUp.template selfadjointView<Upper>()*b, refX+=refS*b);
     VERIFY_IS_APPROX(x.noalias()-=mLo.template selfadjointView<Lower>()*b, refX-=refS*b);
     VERIFY_IS_APPROX(x.noalias()+=mS.template selfadjointView<Upper|Lower>()*b, refX+=refS*b);
-    
+
     // sparse selfadjointView with sparse matrices
     SparseMatrixType mSres(rows,rows);
     VERIFY_IS_APPROX(mSres = mLo.template selfadjointView<Lower>()*mS,
                      refX = refLo.template selfadjointView<Lower>()*refS);
     VERIFY_IS_APPROX(mSres = mS * mLo.template selfadjointView<Lower>(),
                      refX = refS * refLo.template selfadjointView<Lower>());
-    
+
     // sparse triangularView with dense matrices
     VERIFY_IS_APPROX(x=mA.template triangularView<Upper>()*b, refX=refA.template triangularView<Upper>()*b);
     VERIFY_IS_APPROX(x=mA.template triangularView<Lower>()*b, refX=refA.template triangularView<Lower>()*b);
     VERIFY_IS_APPROX(x=b*mA.template triangularView<Upper>(), refX=b*refA.template triangularView<Upper>());
     VERIFY_IS_APPROX(x=b*mA.template triangularView<Lower>(), refX=b*refA.template triangularView<Lower>());
-    
+
     // sparse triangularView with sparse matrices
     VERIFY_IS_APPROX(mSres = mA.template triangularView<Lower>()*mS,   refX = refA.template triangularView<Lower>()*refS);
     VERIFY_IS_APPROX(mSres = mS * mA.template triangularView<Lower>(), refX = refS * refA.template triangularView<Lower>());
@@ -362,16 +370,98 @@ void bug_942()
 
   Vector d(1);
   d[0] = 2;
-  
+
   double res = 2;
-  
+
   VERIFY_IS_APPROX( ( cmA*d.asDiagonal() ).eval().coeff(0,0), res );
   VERIFY_IS_APPROX( ( d.asDiagonal()*rmA ).eval().coeff(0,0), res );
   VERIFY_IS_APPROX( ( rmA*d.asDiagonal() ).eval().coeff(0,0), res );
   VERIFY_IS_APPROX( ( d.asDiagonal()*cmA ).eval().coeff(0,0), res );
 }
 
-void test_sparse_product()
+template<typename Real>
+void test_mixing_types()
+{
+  typedef std::complex<Real> Cplx;
+  typedef SparseMatrix<Real> SpMatReal;
+  typedef SparseMatrix<Cplx> SpMatCplx;
+  typedef SparseMatrix<Cplx,RowMajor> SpRowMatCplx;
+  typedef Matrix<Real,Dynamic,Dynamic> DenseMatReal;
+  typedef Matrix<Cplx,Dynamic,Dynamic> DenseMatCplx;
+
+  Index n = internal::random<Index>(1,100);
+  double density = (std::max)(8./(n*n), 0.2);
+
+  SpMatReal sR1(n,n);
+  SpMatCplx sC1(n,n), sC2(n,n), sC3(n,n);
+  SpRowMatCplx sCR(n,n);
+  DenseMatReal dR1(n,n);
+  DenseMatCplx dC1(n,n), dC2(n,n), dC3(n,n);
+
+  initSparse<Real>(density, dR1, sR1);
+  initSparse<Cplx>(density, dC1, sC1);
+  initSparse<Cplx>(density, dC2, sC2);
+
+  VERIFY_IS_APPROX( sC2 = (sR1 * sC1),                         dC3 = dR1.template cast<Cplx>() * dC1 );
+  VERIFY_IS_APPROX( sC2 = (sC1 * sR1),                         dC3 = dC1 * dR1.template cast<Cplx>() );
+  VERIFY_IS_APPROX( sC2 = (sR1.transpose() * sC1),             dC3 = dR1.template cast<Cplx>().transpose() * dC1 );
+  VERIFY_IS_APPROX( sC2 = (sC1.transpose() * sR1),             dC3 = dC1.transpose() * dR1.template cast<Cplx>() );
+  VERIFY_IS_APPROX( sC2 = (sR1 * sC1.transpose()),             dC3 = dR1.template cast<Cplx>() * dC1.transpose() );
+  VERIFY_IS_APPROX( sC2 = (sC1 * sR1.transpose()),             dC3 = dC1 * dR1.template cast<Cplx>().transpose() );
+  VERIFY_IS_APPROX( sC2 = (sR1.transpose() * sC1.transpose()), dC3 = dR1.template cast<Cplx>().transpose() * dC1.transpose() );
+  VERIFY_IS_APPROX( sC2 = (sC1.transpose() * sR1.transpose()), dC3 = dC1.transpose() * dR1.template cast<Cplx>().transpose() );
+
+  VERIFY_IS_APPROX( sCR = (sR1 * sC1),                         dC3 = dR1.template cast<Cplx>() * dC1 );
+  VERIFY_IS_APPROX( sCR = (sC1 * sR1),                         dC3 = dC1 * dR1.template cast<Cplx>() );
+  VERIFY_IS_APPROX( sCR = (sR1.transpose() * sC1),             dC3 = dR1.template cast<Cplx>().transpose() * dC1 );
+  VERIFY_IS_APPROX( sCR = (sC1.transpose() * sR1),             dC3 = dC1.transpose() * dR1.template cast<Cplx>() );
+  VERIFY_IS_APPROX( sCR = (sR1 * sC1.transpose()),             dC3 = dR1.template cast<Cplx>() * dC1.transpose() );
+  VERIFY_IS_APPROX( sCR = (sC1 * sR1.transpose()),             dC3 = dC1 * dR1.template cast<Cplx>().transpose() );
+  VERIFY_IS_APPROX( sCR = (sR1.transpose() * sC1.transpose()), dC3 = dR1.template cast<Cplx>().transpose() * dC1.transpose() );
+  VERIFY_IS_APPROX( sCR = (sC1.transpose() * sR1.transpose()), dC3 = dC1.transpose() * dR1.template cast<Cplx>().transpose() );
+
+
+  VERIFY_IS_APPROX( sC2 = (sR1 * sC1).pruned(),                         dC3 = dR1.template cast<Cplx>() * dC1 );
+  VERIFY_IS_APPROX( sC2 = (sC1 * sR1).pruned(),                         dC3 = dC1 * dR1.template cast<Cplx>() );
+  VERIFY_IS_APPROX( sC2 = (sR1.transpose() * sC1).pruned(),             dC3 = dR1.template cast<Cplx>().transpose() * dC1 );
+  VERIFY_IS_APPROX( sC2 = (sC1.transpose() * sR1).pruned(),             dC3 = dC1.transpose() * dR1.template cast<Cplx>() );
+  VERIFY_IS_APPROX( sC2 = (sR1 * sC1.transpose()).pruned(),             dC3 = dR1.template cast<Cplx>() * dC1.transpose() );
+  VERIFY_IS_APPROX( sC2 = (sC1 * sR1.transpose()).pruned(),             dC3 = dC1 * dR1.template cast<Cplx>().transpose() );
+  VERIFY_IS_APPROX( sC2 = (sR1.transpose() * sC1.transpose()).pruned(), dC3 = dR1.template cast<Cplx>().transpose() * dC1.transpose() );
+  VERIFY_IS_APPROX( sC2 = (sC1.transpose() * sR1.transpose()).pruned(), dC3 = dC1.transpose() * dR1.template cast<Cplx>().transpose() );
+
+  VERIFY_IS_APPROX( sCR = (sR1 * sC1).pruned(),                         dC3 = dR1.template cast<Cplx>() * dC1 );
+  VERIFY_IS_APPROX( sCR = (sC1 * sR1).pruned(),                         dC3 = dC1 * dR1.template cast<Cplx>() );
+  VERIFY_IS_APPROX( sCR = (sR1.transpose() * sC1).pruned(),             dC3 = dR1.template cast<Cplx>().transpose() * dC1 );
+  VERIFY_IS_APPROX( sCR = (sC1.transpose() * sR1).pruned(),             dC3 = dC1.transpose() * dR1.template cast<Cplx>() );
+  VERIFY_IS_APPROX( sCR = (sR1 * sC1.transpose()).pruned(),             dC3 = dR1.template cast<Cplx>() * dC1.transpose() );
+  VERIFY_IS_APPROX( sCR = (sC1 * sR1.transpose()).pruned(),             dC3 = dC1 * dR1.template cast<Cplx>().transpose() );
+  VERIFY_IS_APPROX( sCR = (sR1.transpose() * sC1.transpose()).pruned(), dC3 = dR1.template cast<Cplx>().transpose() * dC1.transpose() );
+  VERIFY_IS_APPROX( sCR = (sC1.transpose() * sR1.transpose()).pruned(), dC3 = dC1.transpose() * dR1.template cast<Cplx>().transpose() );
+
+
+  VERIFY_IS_APPROX( dC2 = (sR1 * sC1),                         dC3 = dR1.template cast<Cplx>() * dC1 );
+  VERIFY_IS_APPROX( dC2 = (sC1 * sR1),                         dC3 = dC1 * dR1.template cast<Cplx>() );
+  VERIFY_IS_APPROX( dC2 = (sR1.transpose() * sC1),             dC3 = dR1.template cast<Cplx>().transpose() * dC1 );
+  VERIFY_IS_APPROX( dC2 = (sC1.transpose() * sR1),             dC3 = dC1.transpose() * dR1.template cast<Cplx>() );
+  VERIFY_IS_APPROX( dC2 = (sR1 * sC1.transpose()),             dC3 = dR1.template cast<Cplx>() * dC1.transpose() );
+  VERIFY_IS_APPROX( dC2 = (sC1 * sR1.transpose()),             dC3 = dC1 * dR1.template cast<Cplx>().transpose() );
+  VERIFY_IS_APPROX( dC2 = (sR1.transpose() * sC1.transpose()), dC3 = dR1.template cast<Cplx>().transpose() * dC1.transpose() );
+  VERIFY_IS_APPROX( dC2 = (sC1.transpose() * sR1.transpose()), dC3 = dC1.transpose() * dR1.template cast<Cplx>().transpose() );
+
+
+  VERIFY_IS_APPROX( dC2 = dR1 * sC1, dC3 = dR1.template cast<Cplx>() * sC1 );
+  VERIFY_IS_APPROX( dC2 = sR1 * dC1, dC3 = sR1.template cast<Cplx>() * dC1 );
+  VERIFY_IS_APPROX( dC2 = dC1 * sR1, dC3 = dC1 * sR1.template cast<Cplx>() );
+  VERIFY_IS_APPROX( dC2 = sC1 * dR1, dC3 = sC1 * dR1.template cast<Cplx>() );
+
+  VERIFY_IS_APPROX( dC2 = dR1.row(0) * sC1, dC3 = dR1.template cast<Cplx>().row(0) * sC1 );
+  VERIFY_IS_APPROX( dC2 = sR1 * dC1.col(0), dC3 = sR1.template cast<Cplx>() * dC1.col(0) );
+  VERIFY_IS_APPROX( dC2 = dC1.row(0) * sR1, dC3 = dC1.row(0) * sR1.template cast<Cplx>() );
+  VERIFY_IS_APPROX( dC2 = sC1 * dR1.col(0), dC3 = sC1 * dR1.template cast<Cplx>().col(0) );
+}
+
+EIGEN_DECLARE_TEST(sparse_product)
 {
   for(int i = 0; i < g_repeat; i++) {
     CALL_SUBTEST_1( (sparse_product<SparseMatrix<double,ColMajor> >()) );
@@ -381,5 +471,7 @@ void test_sparse_product()
     CALL_SUBTEST_2( (sparse_product<SparseMatrix<std::complex<double>, RowMajor > >()) );
     CALL_SUBTEST_3( (sparse_product<SparseMatrix<float,ColMajor,long int> >()) );
     CALL_SUBTEST_4( (sparse_product_regression_test<SparseMatrix<double,RowMajor>, Matrix<double, Dynamic, Dynamic, RowMajor> >()) );
+
+    CALL_SUBTEST_5( (test_mixing_types<float>()) );
   }
 }

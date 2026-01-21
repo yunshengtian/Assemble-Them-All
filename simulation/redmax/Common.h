@@ -17,9 +17,13 @@
 #include "opengl_viewer.h"
 
 using namespace std;
-using namespace Eigen;
 
 namespace redmax {
+
+// Note: We avoid 'using namespace Eigen;' to prevent conflicts with Eigen 3.4's template aliases
+// Import specific commonly-used template aliases
+using Eigen::Matrix;
+using Eigen::Dynamic;
 
 using dtype = double;
 
@@ -49,6 +53,22 @@ typedef Eigen::DiagonalMatrix<dtype, Eigen::Dynamic> DiagonalMatrixX;
 typedef Eigen::Matrix<dtype, 3, Eigen::Dynamic> Matrix3X;
 typedef Eigen::SparseMatrix<dtype> SparseMatrixX;
 typedef Eigen::Triplet<dtype> TripletX;
+
+// Integer vector/matrix types
+typedef Eigen::Matrix<int, 2, 1> Vector2i;
+typedef Eigen::Matrix<int, 3, 1> Vector3i;
+typedef Eigen::Matrix<int, Eigen::Dynamic, 1> VectorXi;
+typedef Eigen::Matrix<int, 3, Eigen::Dynamic> Matrix3Xi;
+
+// Float vector/matrix types (for rendering)
+typedef Eigen::Matrix<float, 2, 1> Vector2f;
+typedef Eigen::Matrix<float, 3, 1> Vector3f;
+typedef Eigen::Matrix<float, 4, 4> Matrix4f;
+typedef Eigen::Matrix<float, 2, Eigen::Dynamic> Matrix2Xf;
+typedef Eigen::Matrix<float, 3, Eigen::Dynamic> Matrix3Xf;
+
+// Quaternion type
+typedef Eigen::Quaternion<dtype> Quaternion;
 
 typedef Matrix3 SO3;
 typedef Vector3 so3;
