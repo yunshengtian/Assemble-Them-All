@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "assemble-them-all"
+version = "0.1.0"
+description = "Physics-Based Planning for Generalizable Assembly by Disassembly"
+authors = ["Yunsheng Tian <yunsheng@csail.mit.edu>"]
+readme = "README.md"
+license = "MIT"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+cloudpickle = "^2.0"
+gymnasium = "^0.29"
+ipython = "^8.0"
+matplotlib = "^3.5"
+networkx = "^2.6"
+numpy = "^1.26"
+pillow = "^10.0"
+pyglet = "^2.0"
+pyquaternion = "^0.9"
+python-fcl = "^0.7"
+requests = "^2.27"
+rtree = "^1.0"
+scikit-learn = "^1.0"
+scipy = "^1.11"
+sortedcontainers = "^2.4"
+tqdm = "^4.62"
+trimesh = "^4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
